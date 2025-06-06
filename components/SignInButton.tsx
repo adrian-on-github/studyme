@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { Button } from "./ui/button";
+import { signIn } from "next-auth/react";
 
 interface ButtonProps {
   text: string;
@@ -15,10 +16,16 @@ const SignInButton = ({ text, click, icon }: ButtonProps) => {
       className="w-1/2 border-black/10 cursor-pointer text-black"
       onClick={
         click === "google"
-          ? () => {}
+          ? async () => {
+              await signIn("google");
+            }
           : click === "linkedin"
-          ? () => {}
-          : () => {}
+          ? () => {
+              console.log("linkedin");
+            }
+          : () => {
+              return null;
+            }
       }
     >
       {icon}
