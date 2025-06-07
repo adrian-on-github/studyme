@@ -24,9 +24,8 @@ const RedirectQuestion = () => {
       setUserExists(data.exists);
       if (!data.exists) {
         router.push("/get-started");
-      } else {
-        console.log("exist");
       }
+      console.log(data.exists);
     };
 
     checkUserExists();

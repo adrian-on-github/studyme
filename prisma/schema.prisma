@@ -22,8 +22,17 @@ model User {
 
 model UserData {
   userId String @unique
-  email String @unique
-  user User @relation(fields: [userId, email], references: [id, email])
+  email String
+  image String
+  fullname String
+  age String
+  language String
+  job String?
+  reason String?
+  method String?
+  subject String
+  additional_context String?
+  user User @relation(fields: [userId], references: [id])
 }
 
 model Account {

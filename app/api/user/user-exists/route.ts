@@ -4,13 +4,19 @@ import prisma from "@/lib/prisma";
 export const POST = async (req: Request) => {
   const { email } = await req.json();
 
-  if (!email) {
+  const user = await prisma.user.findUnique({
+    where: {
+      email: email,
+    },
+  });
+
+  if (!user) {
     return NextResponse.json({ exists: false });
   }
 
-  const user = prisma.user.findUnique({
-    where: { email },
+  const userData = await prisma.userData.findUnique({
+    where: { userId: user.id },
   });
 
-  return NextResponse.json({ exists: !!user });
+  return NextResponse.json({ exists: !!userData });
 };
