@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Rambla, Palanquin } from "next/font/google";
 import "./globals.css";
+import { SessionProvider } from "next-auth/react";
 
 const ramblaSans = Rambla({
   variable: "--font-cairo",
@@ -10,7 +11,7 @@ const ramblaSans = Rambla({
 
 const palanquinSans = Palanquin({
   variable: "--font-palanquin",
-  weight: "600",
+  weight: "400",
   subsets: ["latin"],
 });
 
@@ -29,7 +30,7 @@ export default function RootLayout({
       <body
         className={`${ramblaSans.variable} ${palanquinSans.variable} antialiased`}
       >
-        {children}
+        <SessionProvider>{children}</SessionProvider>
       </body>
     </html>
   );

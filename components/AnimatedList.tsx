@@ -21,7 +21,7 @@ let notifications = [
     color: "#fe9a00",
   },
   {
-    name: "Math Exam today...",
+    name: "I need a Math Teacher",
     description: "Lena",
     time: "12m ago",
     icon: "📚",
@@ -42,7 +42,7 @@ const Notification = ({ name, description, icon, color, time }: Item) => {
   return (
     <figure
       className={cn(
-        "relative mx-auto min-h-fit w-full max-w-[400px] cursor-pointer overflow-hidden rounded-2xl p-4",
+        "relative mx-auto max-h-[100px] w-full max-w-[400px] cursor-pointer overflow-hidden rounded-2xl p-4",
         "transition-all duration-200 ease-in-out hover:scale-[103%]",
         "bg-white [box-shadow:0_0_0_1px_rgba(0,0,0,.03),0_2px_4px_rgba(0,0,0,.05),0_12px_24px_rgba(0,0,0,.05)]",
         "transform-gpu dark:bg-transparent dark:backdrop-blur-md dark:[border:1px_solid_rgba(255,255,255,.1)] dark:[box-shadow:0_-20px_80px_-20px_#ffffff1f_inset]"
@@ -60,8 +60,6 @@ const Notification = ({ name, description, icon, color, time }: Item) => {
         <div className="flex flex-col overflow-hidden">
           <figcaption className="flex flex-row items-center whitespace-pre text-lg font-medium dark:text-white">
             <span className="text-sm sm:text-lg">{name}</span>
-            <span className="mx-1">·</span>
-            <span className="text-xs text-gray-500">{time}</span>
           </figcaption>
           <p className="text-sm font-normal dark:text-white/60">
             {description}
@@ -76,7 +74,7 @@ export function AnimatedListDemo({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "relative flex h-[500px] w-full flex-col overflow-hidden p-2",
+        "relative flex h-[290px] w-full flex-col overflow-hidden p-2",
         className
       )}
     >
@@ -85,8 +83,6 @@ export function AnimatedListDemo({ className }: { className?: string }) {
           <Notification {...item} key={idx} />
         ))}
       </AnimatedList>
-
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-background"></div>
     </div>
   );
 }

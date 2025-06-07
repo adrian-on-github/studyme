@@ -1,36 +1,34 @@
-"use client";
 import React from "react";
 import { Button } from "./ui/button";
-import { signIn } from "next-auth/react";
+import { signIn } from "@/app/api/auth/handler/auth";
 
 interface ButtonProps {
   text: string;
-  click: string;
   icon?: string | React.ReactNode;
 }
 
-const SignInButton = ({ text, click, icon }: ButtonProps) => {
+// useSession handler/ auth session for button dashboard
+
+const SignInButton = async ({ text, icon }: ButtonProps) => {
   return (
-    <Button
-      variant="outline"
-      className="w-1/2 border-black/10 cursor-pointer text-black"
-      onClick={
-        click === "google"
-          ? async () => {
-              await signIn("google");
-            }
-          : click === "linkedin"
-          ? () => {
-              console.log("linkedin");
-            }
-          : () => {
-              return null;
-            }
-      }
-    >
-      {icon}
-      {text}
-    </Button>
+    <>
+      <form
+        action={async () => {
+          "use server";
+          await signIn("google");
+        }}
+        className="w-full flex items-center justify-center"
+      >
+        <Button
+          variant="outline"
+          className="w-1/2 border-black/10 cursor-pointer text-black"
+          type="submit"
+        >
+          {icon}
+          {text}
+        </Button>
+      </form>
+    </>
   );
 };
 

@@ -5,7 +5,7 @@ import { motion } from "motion/react";
 
 export function GridBackground({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative flex min-h-[40vh] w-full items-center justify-center bg-white dark:bg-black py-20">
+    <div className="relative flex min-h-[70vh] w-full items-center justify-center bg-white dark:bg-black py-20 lg:px-10">
       {/* Grid lines */}
       <div
         className={cn(

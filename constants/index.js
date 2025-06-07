@@ -1,5 +1,13 @@
-import onboarding from "@/public/onboarding.jpg";
+import openai from "@/public/openai.png";
+import google from "@/public/google.png";
+import amazon from "@/public/amazon.png";
+import meta from "@/public/meta.png";
+import microsoft from "@/public/microsoft.png";
 
 export const media = {
-  onboarding,
+  openai,
+  meta,
+  google,
+  microsoft,
+  amazon,
 };
