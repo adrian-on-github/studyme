@@ -7,8 +7,6 @@ interface ButtonProps {
   icon?: string | React.ReactNode;
 }
 
-// useSession handler/ auth session for button dashboard
-
 const SignInButton = async ({ text, icon }: ButtonProps) => {
   return (
     <>

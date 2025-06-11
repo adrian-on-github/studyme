@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 export const POST = async (req: Request) => {
   const { email } = await req.json();
@@ -18,5 +18,5 @@ export const POST = async (req: Request) => {
     where: { userId: user.id },
   });
 
-  return NextResponse.json({ exists: !!userData });
+  return NextResponse.json({ exists: !!userData, id: user.id });
 };

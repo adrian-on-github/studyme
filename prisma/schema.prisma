@@ -17,19 +17,18 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  user UserData?
+  userData UserData?
 }
 
 model UserData {
-  userId String @unique
+  userId String @id
   email String
-  image String
+  image String?
   fullname String
   age String
   language String
-  job String?
-  reason String?
-  method String?
+  reason String
+  method String
   subject String
   additional_context String?
   user User @relation(fields: [userId], references: [id])

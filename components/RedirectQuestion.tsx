@@ -6,7 +6,6 @@ import { useSession } from "next-auth/react";
 const RedirectQuestion = () => {
   const router = useRouter();
   const { data: session } = useSession();
-  const [_, setUserExists] = useState<boolean>(false);
 
   useEffect(() => {
     if (!session?.user?.email) return;
@@ -19,11 +18,13 @@ const RedirectQuestion = () => {
         },
         body: JSON.stringify({ email: session?.user?.email }),
       });
-
       const data = await res.json();
-      setUserExists(data.exists);
+      const id = data.id;
+
       if (!data.exists) {
-        router.push("/get-started");
+        router.push(`/get-started/${id}`);
+      } else {
+        router.push("/");
       }
       console.log(data.exists);
     };
