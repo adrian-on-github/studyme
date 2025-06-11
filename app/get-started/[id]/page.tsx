@@ -14,6 +14,7 @@ import {
   BrainCircuit,
   EarthLock,
   Languages,
+  Loader2Icon,
   PlugZap,
   Plus,
   Pyramid,
@@ -61,7 +62,7 @@ const learningMethods = [
   { label: "🎮 Gamified Learning", value: "gamified-learning" },
 ];
 
-const language = [
+const languageList = [
   { label: "🇬🇧 English", value: "english" },
   { label: "🇩🇪 German", value: "german" },
   { label: "🇪🇸 Spanish", value: "spanish" },
@@ -139,19 +140,21 @@ const Page = () => {
         return;
       }
       setErrorMessage("");
-      const res1 = await fetch("/api/user/getUser", {
+      const res1 = await fetch(`/api/user/getUser?userId=${params.id}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          userId: params.id,
-        }),
       });
       if (res1.status === 500) {
         setErrorMessage("Form couldn't submit. Please try later again");
       }
       const userData = await res1.json();
+
+      if (!userData.user) {
+        setErrorMessage("User not found or already created.");
+        return;
+      }
 
       const res2 = await fetch("/api/user/create", {
         method: "POST",
@@ -159,24 +162,32 @@ const Page = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: params.id,
-          email: userData.email,
-          image: userData.image || null,
-          fullname: name,
-          age: age,
-          language: language,
-          reason: reason,
-          method: method,
-          subject: subject,
-          additional_context: additionalContext,
+          user: {
+            userId: params.id,
+            email: userData.user.email,
+            image: userData.user.image || null,
+            fullname: name,
+            age: age,
+            language: language,
+            reason: reason,
+            method: method,
+            subject: subject,
+            additional_context: additionalContext,
+          },
         }),
       });
+
       if (res2.status === 500) {
         setErrorMessage("Form couldn't submit. Please try later again");
       }
       const data = await res2.json();
-      console.log(data);
+      if (!data.success) {
+        setErrorMessage("Something went wrong!");
+      }
+      console.log(data.user);
     } catch (error) {
+      console.error(error);
+      setErrorMessage("Unexpected error occurred. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -255,7 +266,7 @@ const Page = () => {
                   <SelectValue placeholder="Language" />
                 </SelectTrigger>
                 <SelectContent>
-                  {language.map(({ label, value }) => (
+                  {languageList.map(({ label, value }) => (
                     <SelectItem value={value} key={value}>
                       {label}
                     </SelectItem>
@@ -344,13 +355,21 @@ const Page = () => {
             </div>
           </div>
           {errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>}
+
           <Button
+            disabled={loading}
             className="mt-5 w-full lg:w-2/3 border-black/10"
             type="submit"
             variant="outline"
-            disabled={loading}
           >
-            Start Learning
+            {loading ? (
+              <>
+                <Loader2Icon className="animate-spin mr-2 h-4 w-4" />
+                Loading...
+              </>
+            ) : (
+              "Start Learning"
+            )}
           </Button>
         </form>
       </section>

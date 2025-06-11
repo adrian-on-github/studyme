@@ -11,7 +11,7 @@ export const POST = async (req: Request) => {
 
     const createUser = await prisma.userData.create({
       data: {
-        userId: user.id,
+        userId: user.userId,
         email: user.email,
         image: user.image || null,
         fullname: user.fullname,
@@ -24,8 +24,15 @@ export const POST = async (req: Request) => {
       },
     });
 
-    return NextResponse.json({ status: 200, user: !!createUser });
+    return NextResponse.json(
+      { success: true, user: createUser },
+      { status: 200 }
+    );
   } catch (error) {
-    return NextResponse.json({ status: 500 });
+    console.error("Error in create user:", error);
+    return NextResponse.json(
+      { success: false, message: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 };

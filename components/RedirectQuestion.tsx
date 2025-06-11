@@ -18,6 +18,7 @@ const RedirectQuestion = () => {
         },
         body: JSON.stringify({ email: session?.user?.email }),
       });
+
       const data = await res.json();
       const id = data.id;
 

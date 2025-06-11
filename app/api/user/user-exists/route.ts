@@ -18,5 +18,8 @@ export const POST = async (req: Request) => {
     where: { userId: user.id },
   });
 
-  return NextResponse.json({ exists: !!userData, id: user.id });
+  return NextResponse.json({
+    exists: !!userData,
+    id: user.id,
+  });
 };
