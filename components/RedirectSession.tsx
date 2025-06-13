@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
-const RedirectQuestion = () => {
+const RedirectSession = () => {
   const router = useRouter();
   const { data: session } = useSession();
 
@@ -20,7 +20,7 @@ const RedirectQuestion = () => {
       });
 
       const data = await res.json();
-      const id = data.id;
+      const id = data.user.userId;
 
       if (!data.exists) {
         router.push(`/get-started/${id}`);
@@ -36,4 +36,4 @@ const RedirectQuestion = () => {
   return null;
 };
 
-export default RedirectQuestion;
+export default RedirectSession;

@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "./ui/button";
 import { signIn } from "@/app/api/auth/handler/auth";
+import RedirectButton from "./RedirectButton";
 
 interface ButtonProps {
   text: string;
@@ -17,14 +18,7 @@ const SignInButton = async ({ text, icon }: ButtonProps) => {
         }}
         className="w-full flex items-center justify-center"
       >
-        <Button
-          variant="outline"
-          className="w-1/2 border-black/10 cursor-pointer text-black"
-          type="submit"
-        >
-          {icon}
-          {text}
-        </Button>
+        <RedirectButton text={text} icon={icon} />
       </form>
     </>
   );

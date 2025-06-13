@@ -20,6 +20,6 @@ export const POST = async (req: Request) => {
 
   return NextResponse.json({
     exists: !!userData,
-    id: user.id,
+    user: userData,
   });
 };

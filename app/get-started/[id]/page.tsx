@@ -27,9 +27,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import RedirectQuestion from "@/components/RedirectQuestion";
 import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
+import RedirectSession from "@/components/RedirectSession";
 
 const ageGroups = [
   { label: "👶 13-15 years old", value: "13-15" },
@@ -195,7 +195,7 @@ const Page = () => {
 
   return (
     <>
-      <RedirectQuestion />
+      <RedirectSession />
       <section className="px-10 pt-8 h-full w-full flex justify-center items-center flex-col">
         <Breadcrumb>
           <BreadcrumbList>
