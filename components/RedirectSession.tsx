@@ -20,7 +20,7 @@ const RedirectSession = () => {
       });
 
       const data = await res.json();
-      const id = data.user.userId;
+      const id = data.userId;
 
       if (!data.exists) {
         router.push(`/get-started/${id}`);
@@ -31,7 +31,7 @@ const RedirectSession = () => {
     };
 
     checkUserExists();
-  }, [session, router]);
+  }, [session]);
 
   return null;
 };

@@ -21,5 +21,6 @@ export const POST = async (req: Request) => {
   return NextResponse.json({
     exists: !!userData,
     user: userData,
+    userId: user.id,
   });
 };

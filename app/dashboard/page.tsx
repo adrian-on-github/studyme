@@ -34,10 +34,19 @@ const Dashboard = () => {
 
     getUserData();
     setMount(true);
-  }, []);
+  }, [session]);
 
   if (!mount) return null;
-  return <div>{user?.email || "arg n"}</div>;
+  return (
+    <>
+      <div className="p-7 flex items-start justify-start flex-col gap-y-12 w-full relative">
+        <h1 className="text-3xl lg:text-5xl p font-bold">
+          Welcome back {user?.fullname}!👋
+        </h1>
+        <div className="max-w-7xl mx-auto"></div>
+      </div>
+    </>
+  );
 };
 
 export default Dashboard;

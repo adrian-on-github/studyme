@@ -8,10 +8,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       <SidebarProvider>
         <AppSidebar />
         <main className="w-full flex items-start flex-col">
-          <div className="border-b border-b-black/10 w-full flex p-3">
+          <div className="border-b border-b-black/10 w-full flex p-4">
             <SidebarTrigger />
           </div>
-          <section className="p-10">{children}</section>
+          <section className="max-w-full">{children}</section>
         </main>
       </SidebarProvider>
     </div>
