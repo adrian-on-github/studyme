@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
@@ -19,15 +19,19 @@ const RedirectSession = () => {
         body: JSON.stringify({ email: session?.user?.email }),
       });
 
+      if (!res.ok) {
+        console.error("POST Request Failed!");
+      }
       const data = await res.json();
       const id = data.userId;
-
-      if (!data.exists) {
+      const state = localStorage.getItem("discoveryState");
+      if (!data.exists || state || data.user === null) {
         router.push(`/get-started/${id}`);
-      } else {
-        router.push("/");
+        console.log("no");
+      } else if (data.exists && !state) {
+        console.log("yes");
+        router.push("/dashboard");
       }
-      console.log(data.exists);
     };
 
     checkUserExists();

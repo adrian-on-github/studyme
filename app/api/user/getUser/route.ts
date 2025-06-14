@@ -20,7 +20,13 @@ export const GET = async (req: Request) => {
       return NextResponse.json({ status: 500, message: "User not found" });
     }
 
-    return NextResponse.json({ user, status: 200 });
+    const userData = await prisma.userData.findFirst({
+      where: {
+        userId: userId,
+      },
+    });
+
+    return NextResponse.json({ user, userData, status: 200 });
   } catch (error) {
     console.error("Error in getUser:", error);
     return NextResponse.json({ message: "Server error" }, { status: 500 });

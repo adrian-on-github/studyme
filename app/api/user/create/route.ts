@@ -11,16 +11,17 @@ export const POST = async (req: Request) => {
 
     const createUser = await prisma.userData.create({
       data: {
-        userId: user.userId,
+        user: {
+          connect: { id: user.userId },
+        },
         email: user.email,
         image: user.image || null,
-        fullname: user.fullname,
         age: user.age,
         language: user.language,
-        reason: user.reason,
-        method: user.method,
+        fullname: user.fullname,
+        studyReason: user.reason,
+        learningMethod: user.method,
         subject: user.subject,
-        additional_context: user.additional_context,
       },
     });
 

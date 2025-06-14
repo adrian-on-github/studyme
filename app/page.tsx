@@ -13,7 +13,6 @@ export default async function Home() {
       <div className="absolute z-50 right-5">
         <AnimatedListDemo />
       </div>
-
       <main className="flex flex-col justify-center items-center">
         <section className="min-h-[100vh] w-full">
           <GridBackground>

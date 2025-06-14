@@ -22,12 +22,12 @@ model User {
 model UserData {
   userId String @id
   email String
-  image String?
-  fullname String
+  image String
   age String
   language String
-  reason String
-  method String
+  fullname String
+  studyReason String
+  learningMethod String
   subject String
   additional_context String?
   user User @relation(fields: [userId], references: [id])
