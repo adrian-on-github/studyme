@@ -9,14 +9,12 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   BrainCircuit,
   EarthLock,
   Languages,
   Loader2Icon,
   PlugZap,
-  Plus,
   Pyramid,
   UserPen,
 } from "lucide-react";
@@ -31,31 +29,6 @@ import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
 import RedirectSession from "@/components/RedirectSession";
 
-const ageGroups = [
-  { label: "👶 13-15 years old", value: "13-15" },
-  { label: "🧑‍🎓 16-18 years old", value: "16-18" },
-  { label: "🧑‍💼 19-21 years old", value: "19-21" },
-];
-
-const reasons = [
-  { label: "🎯 Preparing for interviews", value: "interviews" },
-  { label: "📈 Improving grades", value: "better-grades" },
-  { label: "📝 Getting help with homework", value: "homework-help" },
-  { label: "🧠 Preparing for exams", value: "exams" },
-  { label: "🎓 Enhancing subject knowledge", value: "subject-knowledge" },
-  { label: "🛠️ Completing school projects", value: "school-projects" },
-  { label: "📊 Studying for standardized tests", value: "standardized-tests" },
-];
-
-const learningMethods = [
-  { label: "📚 Reading & Writing", value: "reading-writing" },
-  { label: "🎧 Listening & Audio", value: "listening-audio" },
-  { label: "🎥 Videos & Visuals", value: "videos-visuals" },
-  { label: "🧩 Interactive Exercises", value: "interactive-exercises" },
-  { label: "📝 Practice Tests & Quizzes", value: "practice-tests" },
-  { label: "⏰ Self-Paced Learning", value: "self-paced" },
-];
-
 const languageList = [
   { label: "🇬🇧 English", value: "english" },
   { label: "🇩🇪 German", value: "german" },
@@ -63,61 +36,26 @@ const languageList = [
   { label: "🇫🇷 French", value: "french" },
 ];
 
-const subject = [
-  { label: "➗ Mathematics", value: "math" },
-  { label: "🔬 Science", value: "science" },
-  { label: "📖 Literature", value: "literature" },
-  { label: "🌍 Geography", value: "geography" },
-  { label: "🧪 Chemistry", value: "chemistry" },
-  { label: "💻 Computer Science", value: "computer-science" },
-];
-
 interface SubmitProps {
   name: string;
-  age: string;
-  example: string;
   language: string;
-  reason: string;
-  method: string;
-  subject: string;
 }
 
 const UserForm = () => {
   const [formState, setFormState] = useState<SubmitProps>({
     name: "",
-    age: "",
-    example: "",
     language: "",
-    reason: "",
-    method: "",
-    subject: "",
   });
 
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const params = useParams<{ id: string }>();
 
-  const handleSubmit = async ({
-    name,
-    age,
-    example,
-    language,
-    reason,
-    method,
-    subject,
-  }: SubmitProps) => {
+  const handleSubmit = async ({ name, language }: SubmitProps) => {
     try {
       setLoading(true);
-      console.log(name, age, example, language, reason, method, subject);
 
-      if (
-        name.trim() === "" ||
-        age.trim() === "" ||
-        language.trim() === "" ||
-        reason.trim() === "" ||
-        method.trim() === "" ||
-        subject.trim() === ""
-      ) {
+      if (name.trim() === "" || language.trim() === "") {
         setErrorMessage("Please fill out the form!");
         return;
       }
@@ -149,11 +87,7 @@ const UserForm = () => {
             email: userData.user.email,
             image: userData.user.image || null,
             fullname: name,
-            age: age,
             language: language,
-            reason: reason,
-            method: method,
-            subject: subject,
           },
         }),
       });
@@ -212,28 +146,7 @@ const UserForm = () => {
                 className="bg-white"
               />
             </div>
-            <div className="lg:w-2/3 w-full items-start gap-2 flex flex-col justify-center">
-              <Label htmlFor="message">
-                <EarthLock size={15} className="mr-1" />
-                Age
-              </Label>
-              <Select
-                onValueChange={(age) =>
-                  setFormState({ ...formState, age: age })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Your Age" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ageGroups.map(({ label, value }) => (
-                    <SelectItem value={value} key={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+
             <div className="lg:w-2/3 w-full items-start gap-2 flex flex-col justify-center">
               <Label htmlFor="message">
                 <Languages size={15} className="mr-1" />
@@ -249,69 +162,6 @@ const UserForm = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {languageList.map(({ label, value }) => (
-                    <SelectItem value={value} key={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="lg:w-2/3 w-full items-start gap-2 flex flex-col justify-center">
-              <Label htmlFor="message">
-                <PlugZap size={15} className="mr-1" />
-                Reason:
-              </Label>
-              <Select
-                onValueChange={(x) => setFormState({ ...formState, reason: x })}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Reason" />
-                </SelectTrigger>
-                <SelectContent>
-                  {reasons.map(({ label, value }) => (
-                    <SelectItem value={value} key={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="lg:w-2/3 w-full items-start gap-2 flex flex-col justify-center">
-              <Label htmlFor="message">
-                <BrainCircuit size={15} className="mr-1" />
-                Learning Method
-              </Label>
-              <Select
-                onValueChange={(m) => setFormState({ ...formState, method: m })}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Learning Method" />
-                </SelectTrigger>
-                <SelectContent>
-                  {learningMethods.map(({ label, value }) => (
-                    <SelectItem value={value} key={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="lg:w-2/3 w-full items-start gap-2 flex flex-col justify-center">
-              <Label htmlFor="message">
-                <Pyramid size={15} className="mr-1" />
-                Your worst subject
-              </Label>
-              <Select
-                onValueChange={(s) =>
-                  setFormState({ ...formState, subject: s })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Subject" />
-                </SelectTrigger>
-                <SelectContent>
-                  {subject.map(({ label, value }) => (
                     <SelectItem value={value} key={value}>
                       {label}
                     </SelectItem>
@@ -337,6 +187,10 @@ const UserForm = () => {
               "Start Learning"
             )}
           </Button>
+          <p className="pt-8 text-base mx-auto max-w-6xl text-center">
+            On the User Informations page you provide informations about
+            yourself which will be used in every next interaction with StudyMe!
+          </p>
         </form>
       </section>
     </>

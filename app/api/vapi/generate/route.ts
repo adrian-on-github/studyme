@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { generateText } from "ai";
-import { google } from "@ai-sdk/google";
+
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
@@ -11,37 +10,35 @@ export async function POST(req: Request) {
   const {
     userId,
     additionalInformations,
-    fullName,
     subject,
     learningMethod,
-    aiPrompt,
+    goal,
+    educationalInstitution,
+    academicLevel,
   } = await req.json();
 
   try {
-    const { text: questions } = await generateText({
-      model: google("gemini-2.0-flash-001"),
-      prompt: aiPrompt,
-    });
-
     const interview = {
       userId: userId,
-      fullName,
       subject,
       learningMethod,
       additionalInformations,
-      questions: JSON.parse(questions),
+      goal,
+      educationalInstitution,
+      academicLevel,
     };
 
-    await prisma.interview.create({
+    await prisma.userData.update({
+      where: {
+        userId: userId,
+      },
       data: {
-        fullName: interview.fullName,
-        subject: interview.subject,
         learningMethod: interview.learningMethod,
-        additionalInformations: interview.additionalInformations,
-        questions: JSON.stringify(interview.questions),
-        user: {
-          connect: { userId: interview.userId },
-        },
+        subject: interview.subject,
+        goal: interview.goal,
+        educationalInstitution: interview.educationalInstitution,
+        academicLevel: interview.academicLevel,
+        additional_informations: interview.additionalInformations,
       },
     });
 

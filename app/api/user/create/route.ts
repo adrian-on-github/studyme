@@ -16,12 +16,8 @@ export async function POST(req: Request) {
         },
         email: user.email,
         image: user.image || null,
-        age: user.age,
         language: user.language,
         fullname: user.fullname,
-        studyReason: user.reason,
-        learningMethod: user.method,
-        subject: user.subject,
       },
     });
 

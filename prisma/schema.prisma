@@ -23,27 +23,16 @@ model UserData {
   userId String @id
   email String
   image String
-  age String
   language String
   fullname String
-  studyReason String
-  learningMethod String
-  subject String
-  additional_context String?
-  interviews Interview[]
+  studyReason String?
+  learningMethod String?
+  subject String?
+  goal String?
+  educationalInstitution String?
+  academicLevel String?
+  additional_informations String?
   user User @relation(fields: [userId], references: [id])
-}
-
-model Interview {
-  id                      String   @id @default(uuid())
-  fullName                String
-  subject                 String
-  learningMethod          String
-  additionalInformations  String
-  createdAt               DateTime @default(now())
-  questions               String
-  userId                  String
-  user                    UserData @relation(fields: [userId], references: [userId])
 }
 
 model Account {

@@ -9,12 +9,12 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
-import RedirectSession from "@/components/RedirectSession";
 import type { UserData } from "@prisma/client";
 import Image from "next/image";
 import { media } from "@/constants";
 import UserForm from "@/components/UserForm";
-import { PhoneCall, PhoneOff, Slash } from "lucide-react";
+import { PhoneCall, PhoneOff } from "lucide-react";
+import { vapi } from "@/lib/vapi";
 
 enum callStatus {
   INACTIVE = "INACTIVE",
@@ -25,17 +25,17 @@ enum callStatus {
 
 const Page = () => {
   const [discoveryState, setDiscoveryState] = useState<string>("");
+  const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [mount, setMount] = useState<boolean>(false);
+  const [userInformations, setUserInformations] = useState<string>("");
   const [currentCallStatus, setCurrentCallStatus] = useState<callStatus>(
     callStatus.INACTIVE
   );
-
   const params = useParams<{ id: string }>();
 
   useEffect(() => {
-    const state = localStorage.getItem("discoveryState");
-    if (state) {
+    if (discoveryState) {
       const getUser = async () => {
         const res = await fetch(`/api/user/getUser?userId=${params.id}`, {
           method: "GET",
@@ -44,45 +44,101 @@ const Page = () => {
           },
         });
         if (!res.ok) {
-          console.error("Error GET User req");
+          console.error("Error GET User req", await res.text());
+          return;
         }
+
         const data = await res.json();
         setUserData(data.userData);
       };
       getUser();
-      setDiscoveryState(state);
     }
+
     setMount(true);
   }, [discoveryState]);
 
-  const isSpeaking = true;
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const state = localStorage.getItem("discoveryState");
+      if (state) {
+        setDiscoveryState(state);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const state = localStorage.getItem("checkUserInformations");
+      if (state) {
+        setUserInformations(state);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   let callAnalyse =
     "Im Adrian 25 years old and this is a casual placeholder for any additional Context.";
 
-  if (!mount) return null;
+  useEffect(() => {
+    const onCallStart = () => setCurrentCallStatus(callStatus.ACTIVE);
+    const onCallEnd = () => setCurrentCallStatus(callStatus.FINISHED);
 
-  const activeCall = () => {
-    if (currentCallStatus === "ACTIVE") {
-      setTimeout(() => {
-        setCurrentCallStatus(callStatus.INACTIVE);
-      }, 100);
-    } else {
-      setCurrentCallStatus(callStatus.CONNECTING);
-      setTimeout(() => {
-        setCurrentCallStatus(callStatus.ACTIVE);
-      }, 2000);
-    }
+    const onSpeechStart = () => setIsSpeaking(true);
+    const onSpeechEnd = () => setIsSpeaking(false);
+
+    const onError = (error: Error) => console.log(error);
+
+    vapi.on("call-start", onCallStart);
+    vapi.on("call-end", onCallEnd);
+    vapi.on("speech-start", onSpeechStart);
+    vapi.on("speech-end", onSpeechEnd);
+    vapi.on("error", onError);
+
+    return () => {
+      vapi.off("call-start", onCallStart);
+      vapi.off("call-end", onCallEnd);
+      vapi.off("speech-start", onSpeechStart);
+      vapi.off("speech-end", onSpeechEnd);
+      vapi.off("error", onError);
+    };
+  }, []);
+
+  const handleCall = async () => {
+    setCurrentCallStatus(callStatus.CONNECTING);
+
+    await vapi.start(process.env.NEXT_PUBLIC_VAPI_KEY, {
+      variableValues: {
+        fullname: userData?.fullname,
+        userId: userData?.userId,
+        language: userData?.language,
+      },
+    });
   };
+
+  const handleDisconnect = async () => {
+    setCurrentCallStatus(callStatus.FINISHED);
+    vapi.stop();
+  };
+
+  useEffect(() => {
+    if (currentCallStatus === "FINISHED") {
+      localStorage.setItem("checkUserInformations", "set");
+      localStorage.remove("discoveryState");
+    }
+  }, [currentCallStatus]);
+
+  if (!mount || !params.id) return null;
 
   return (
     <>
-      {!discoveryState ? (
+      {!discoveryState && !userInformations ? (
         <>
           <section className="px-10 pt-8 h-full w-full flex justify-center items-center flex-col">
             <UserForm />
           </section>
         </>
-      ) : (
+      ) : discoveryState && !userInformations ? (
         <>
           <section className="px-10 h-full w-full flex justify-center items-center flex-col">
             <Breadcrumb className="pt-8">
@@ -90,7 +146,6 @@ const Page = () => {
                 <BreadcrumbItem>Home page</BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>Sign in</BreadcrumbItem>
-                <BreadcrumbSeparator />
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>User Informations</BreadcrumbItem>
                 <BreadcrumbSeparator />
@@ -100,7 +155,7 @@ const Page = () => {
               </BreadcrumbList>
             </Breadcrumb>
             <div className="flex justify-center items-center gap-x-12 w-full mx-auto flex-row h-[40vh] pt-12">
-              <div className="flex flex-col gap-y-3 items-center justify-center w-1/2 p-8 bg-black/20 backdrop-blur-md border border-black/20 rounded-lg max-h-7xl h-4/4 relative">
+              <div className="flex flex-col gap-y-3 items-center justify-center w-1/2 p-8 bg-black/10 backdrop-blur-md border border-black/20 rounded-lg max-h-7xl h-4/4 relative">
                 <div className="flex flex-col relative items-center justify-center w-30 h-30 bg-black/5 rounded-full p-2">
                   <Image
                     src={media.avatar}
@@ -117,7 +172,7 @@ const Page = () => {
 
                 <p className="text-2xl font-semibold pt-4">AI Interviewer</p>
               </div>
-              <div className="flex flex-col gap-y-3 items-center justify-center w-1/2 p-8 bg-black/20 backdrop-blur-md border border-black/20 rounded-lg max-h-7xl h-4/4 relative">
+              <div className="flex flex-col gap-y-3 items-center justify-center w-1/2 p-8 bg-black/10 backdrop-blur-md border border-black/20 rounded-lg max-h-7xl h-4/4 relative">
                 <div className="flex flex-col relative items-center justify-center">
                   <Image
                     src={
@@ -151,7 +206,11 @@ const Page = () => {
                   ? "bg-black/20"
                   : "bg-green-500 animate-pulse"
               }`}
-              onClick={activeCall}
+              onClick={() =>
+                currentCallStatus === "ACTIVE"
+                  ? handleDisconnect()
+                  : handleCall()
+              }
             >
               {currentCallStatus === "ACTIVE" ? (
                 <>
@@ -177,9 +236,7 @@ const Page = () => {
             {currentCallStatus !== "FINISHED" && (
               <p className="pt-8 text-base mx-auto max-w-6xl text-center">
                 Congratulations! This is your first Meeting with our AI
-                Interviewer. Please speak about yourself, your weaknesses, your
-                strengths, your current situation in school/university and
-                everything else you would like to! ✨
+                Interviewer. Please do only speak in english. ✨
               </p>
             )}
             {currentCallStatus === "FINISHED" && (
@@ -189,6 +246,8 @@ const Page = () => {
             )}
           </section>
         </>
+      ) : (
+        <p>Edit user informations</p>
       )}
     </>
   );

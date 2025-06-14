@@ -24,11 +24,12 @@ const RedirectSession = () => {
       }
       const data = await res.json();
       const id = data.userId;
-      const state = localStorage.getItem("discoveryState");
-      if (!data.exists || state || data.user === null) {
+      const stateOne = localStorage.getItem("discoveryState");
+      const stateTwo = localStorage.getItem("checkUserInformations");
+      if (!data.exists || stateOne || stateTwo || data.user === null) {
         router.push(`/get-started/${id}`);
         console.log("no");
-      } else if (data.exists && !state) {
+      } else if (data.exists && !stateOne && !stateTwo) {
         console.log("yes");
         router.push("/dashboard");
       }
