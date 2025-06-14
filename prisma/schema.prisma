@@ -30,7 +30,20 @@ model UserData {
   learningMethod String
   subject String
   additional_context String?
+  interviews Interview[]
   user User @relation(fields: [userId], references: [id])
+}
+
+model Interview {
+  id                      String   @id @default(uuid())
+  fullName                String
+  subject                 String
+  learningMethod          String
+  additionalInformations  String
+  createdAt               DateTime @default(now())
+  questions               String
+  userId                  String
+  user                    UserData @relation(fields: [userId], references: [userId])
 }
 
 model Account {

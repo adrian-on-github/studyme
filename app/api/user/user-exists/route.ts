@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export const POST = async (req: Request) => {
+export async function POST(req: Request) {
   try {
     const { email } = await req.json();
 
@@ -28,4 +28,4 @@ export const POST = async (req: Request) => {
     console.error("API Error in /user-exists:", error);
     return NextResponse.json({ error: error }, { status: 500 });
   }
-};
+}

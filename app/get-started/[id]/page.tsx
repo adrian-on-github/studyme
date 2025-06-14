@@ -14,19 +14,23 @@ import type { UserData } from "@prisma/client";
 import Image from "next/image";
 import { media } from "@/constants";
 import UserForm from "@/components/UserForm";
-import { PhoneCall, PhoneOff } from "lucide-react";
+import { PhoneCall, PhoneOff, Slash } from "lucide-react";
 
-interface SubmitProps {
-  name: string;
-  age: string;
-  language: string;
+enum callStatus {
+  INACTIVE = "INACTIVE",
+  CONNECTING = "CONNECTING",
+  ACTIVE = "ACTIVE",
+  FINISHED = "FINISHED",
 }
 
 const Page = () => {
   const [discoveryState, setDiscoveryState] = useState<string>("");
   const [userData, setUserData] = useState<UserData | null>(null);
   const [mount, setMount] = useState<boolean>(false);
-  const [voiceCall, setVoiceCall] = useState<boolean>(false);
+  const [currentCallStatus, setCurrentCallStatus] = useState<callStatus>(
+    callStatus.INACTIVE
+  );
+
   const params = useParams<{ id: string }>();
 
   useEffect(() => {
@@ -52,8 +56,23 @@ const Page = () => {
   }, [discoveryState]);
 
   const isSpeaking = true;
+  let callAnalyse =
+    "Im Adrian 25 years old and this is a casual placeholder for any additional Context.";
 
   if (!mount) return null;
+
+  const activeCall = () => {
+    if (currentCallStatus === "ACTIVE") {
+      setTimeout(() => {
+        setCurrentCallStatus(callStatus.INACTIVE);
+      }, 100);
+    } else {
+      setCurrentCallStatus(callStatus.CONNECTING);
+      setTimeout(() => {
+        setCurrentCallStatus(callStatus.ACTIVE);
+      }, 2000);
+    }
+  };
 
   return (
     <>
@@ -89,6 +108,7 @@ const Page = () => {
                     height={65}
                     className="object-cover"
                     alt={userData?.fullname || "Image"}
+                    draggable={false}
                   />
                   {isSpeaking && (
                     <span className="animate-speak max-w-30 max-h-30" />
@@ -108,6 +128,7 @@ const Page = () => {
                     height={95}
                     className="object-cover rounded-full"
                     alt={userData?.fullname || "Image"}
+                    draggable={false}
                   />
                   {isSpeaking && (
                     <span className="animate-speak max-w-30 max-h-30" />
@@ -115,22 +136,36 @@ const Page = () => {
                 </div>
 
                 <p className="text-2xl font-semibold pt-4">
-                  {userData?.fullname}
+                  {userData?.fullname || "You"}
                 </p>
               </div>
             </div>
             <Button
+              disabled={currentCallStatus === "FINISHED"}
               className={`w-1/2 mt-12 min-h-[5vh] hover:opacity-80 rounded-full ${
-                voiceCall ? "bg-red-500" : "bg-green-500 animate-pulse"
+                currentCallStatus === "ACTIVE"
+                  ? "bg-red-500"
+                  : currentCallStatus === "CONNECTING"
+                  ? "bg-amber-500 animate-pulse"
+                  : currentCallStatus === "FINISHED"
+                  ? "bg-black/20"
+                  : "bg-green-500 animate-pulse"
               }`}
-              onClick={() => {
-                setVoiceCall(!voiceCall);
-              }}
+              onClick={activeCall}
             >
-              {voiceCall ? (
+              {currentCallStatus === "ACTIVE" ? (
                 <>
                   <PhoneOff />
                   Leave Voice Call
+                </>
+              ) : currentCallStatus === "CONNECTING" ? (
+                <>
+                  <PhoneCall />
+                  Connecting to Voice Call
+                </>
+              ) : currentCallStatus === "FINISHED" ? (
+                <>
+                  <p className="text-black">Voice Call Finished</p>
                 </>
               ) : (
                 <>
@@ -139,6 +174,19 @@ const Page = () => {
                 </>
               )}
             </Button>
+            {currentCallStatus !== "FINISHED" && (
+              <p className="pt-8 text-base mx-auto max-w-6xl text-center">
+                Congratulations! This is your first Meeting with our AI
+                Interviewer. Please speak about yourself, your weaknesses, your
+                strengths, your current situation in school/university and
+                everything else you would like to! ✨
+              </p>
+            )}
+            {currentCallStatus === "FINISHED" && (
+              <p className="pt-8 text-base mx-auto max-w-6xl text-center">
+                {callAnalyse}
+              </p>
+            )}
           </section>
         </>
       )}

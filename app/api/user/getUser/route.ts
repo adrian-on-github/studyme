@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export const GET = async (req: Request) => {
+export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId");
@@ -31,4 +31,4 @@ export const GET = async (req: Request) => {
     console.error("Error in getUser:", error);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
-};
+}
