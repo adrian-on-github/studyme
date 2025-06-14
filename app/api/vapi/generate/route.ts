@@ -8,26 +8,19 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const { userId, additionalInformations, fullName, subject, learningMethod } =
-    await req.json();
+  const {
+    userId,
+    additionalInformations,
+    fullName,
+    subject,
+    learningMethod,
+    aiPrompt,
+  } = await req.json();
 
   try {
     const { text: questions } = await generateText({
       model: google("gemini-2.0-flash-001"),
-      prompt: `
-      You are a personal teacher. 
-      Your focus is to collect all important informations. You can remove every unimportant information.
-      The username is: ${fullName}.
-      The users worst subject is: ${subject}.
-      The learningMethod is: ${learningMethod}
-      The additionalInformations are: ${additionalInformations}
-      All the informations you collect will be used later with an ai voice assistant, so do not use "/" or "*" or any other special characters which might break the voice assistant.
-      Please return some important questions you need as a teacher.
-      Return the questions formatted like this:
-      ["Question 1", "Question 2", "Question 3"]
-
-      Thank you! <3 
-      `,
+      prompt: aiPrompt,
     });
 
     const interview = {
