@@ -15,7 +15,6 @@ import { media } from "@/constants";
 import UserForm from "@/components/UserForm";
 import { PhoneCall, PhoneOff } from "lucide-react";
 import SubmitUserForm from "@/components/SubmitUserForm";
-import { vapiClient } from "@/lib/vapi";
 import { vapi } from "@/lib/vapi";
 
 enum callStatus {
@@ -73,66 +72,32 @@ const Page = () => {
     }, 1000);
   }, []);
 
-  useEffect(() => {
-    const onCallStart = () => setCurrentCallStatus(callStatus.ACTIVE);
-    const onCallEnd = () => setCurrentCallStatus(callStatus.FINISHED);
-
-    const onMessage = (message: Message) => {
-      if (message.type === "transcript") {
-        console.log(`${message.role}: ${message.transcript}`);
-      }
-
-      if (
-        message.type === "log" &&
-        message.message?.includes("recv transport changed to disconnected")
-      ) {
-        setCurrentCallStatus(callStatus.DISCONNECTED);
-      }
-    };
-
-    const onSpeechStart = () => setIsSpeaking(true);
-    const onSpeechEnd = () => setIsSpeaking(false);
-
-    const onError = (error: Error) => {
-      console.log(error);
-    };
-
-    vapi.on("call-start", onCallStart);
-    vapi.on("call-end", onCallEnd);
-    vapi.on("speech-start", onSpeechStart);
-    vapi.on("speech-end", onSpeechEnd);
-    vapi.on("error", onError);
-    vapi.on("message", onMessage);
-
-    return () => {
-      vapi.off("call-start", onCallStart);
-      vapi.off("call-end", onCallEnd);
-      vapi.off("speech-start", onSpeechStart);
-      vapi.off("speech-end", onSpeechEnd);
-      vapi.off("error", onError);
-      vapi.off("message", onMessage);
-    };
-  }, []);
-
   const handleCall = async () => {
     try {
+      console.log("Try1");
       setCurrentCallStatus(callStatus.CONNECTING);
 
       if (!userData?.userId || !userData?.fullname || !userData?.language) {
         setCurrentCallStatus(callStatus.INACTIVE);
         return;
       }
-
-      await vapiClient.calls.create({
-        workflowId: "eccfd543-fa18-458c-9b51-1b7a285fd191",
-        assistantOverrides: {
-          variableValues: {
-            fullname: userData.fullname,
-            userId: userData.userId,
-            language: userData.language,
-          },
+      console.log("Try2");
+      const res = await fetch("/api/vapi/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          fullname: userData.fullname,
+          userId: userData.userId,
+          language: userData.language,
+        }),
       });
+
+      const data = await res.json();
+      console.log("Call started:", data);
+
+      await vapi.start();
 
       setCurrentCallStatus(callStatus.ACTIVE);
     } catch (error) {
@@ -140,35 +105,51 @@ const Page = () => {
     }
   };
 
-  const handleDisconnect = async () => {
-    setCurrentCallStatus(callStatus.FINISHED);
+  const handleDisconnect = () => {
     vapi.stop();
+    setCurrentCallStatus(callStatus.FINISHED);
+  };
+
+  const handleFinishCall = () => {
+    localStorage.setItem("checkUserInformations", "set");
   };
 
   useEffect(() => {
-    if (currentCallStatus === "FINISHED") {
-      localStorage.setItem("checkUserInformations", "set");
-    }
-  }, [currentCallStatus]);
+    const onCallStart = () => setCurrentCallStatus(callStatus.ACTIVE);
+    const onCallEnd = () => setCurrentCallStatus(callStatus.FINISHED);
+    const onSpeechStart = () => setIsSpeaking(true);
+    const onSpeechEnd = () => setIsSpeaking(false);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const state = localStorage.getItem("checkUserInformations");
-      if (state) {
-        setUserInformations(state);
-      }
-    }, 1000);
-    return () => clearInterval(interval);
+    vapi.on("call-start", onCallStart);
+    vapi.on("call-end", onCallEnd);
+    vapi.on("speech-start", onSpeechStart);
+    vapi.on("speech-end", onSpeechEnd);
+
+    return () => {
+      vapi.off("call-start", onCallStart);
+      vapi.off("call-end", onCallEnd);
+      vapi.off("speech-start", onSpeechStart);
+      vapi.off("speech-end", onSpeechEnd);
+    };
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const intervalDiscoveryState = setInterval(() => {
       const state = localStorage.getItem("discoveryState");
       if (state) {
         setDiscoveryState(state);
       }
     }, 1000);
-    return () => clearInterval(interval);
+    const intervalUserState = setInterval(() => {
+      const state = localStorage.getItem("checkUserInformations");
+      if (state) {
+        setUserInformations(state);
+      }
+    }, 1000);
+    return () => {
+      clearInterval(intervalDiscoveryState);
+      clearInterval(intervalUserState);
+    };
   }, []);
 
   useEffect(() => {
@@ -180,9 +161,6 @@ const Page = () => {
       return () => clearTimeout(timeout);
     }
   }, [currentCallStatus]);
-
-  let callAnalyse =
-    "Im Adrian 25 years old and this is a casual placeholder for any additional Context.";
 
   if (!mount || !params.id) return null;
 
@@ -265,6 +243,8 @@ const Page = () => {
               onClick={() =>
                 currentCallStatus === "ACTIVE"
                   ? handleDisconnect()
+                  : currentCallStatus === "FINISHED"
+                  ? handleFinishCall()
                   : handleCall()
               }
             >
@@ -297,7 +277,7 @@ const Page = () => {
             )}
             {currentCallStatus === "FINISHED" && (
               <p className="pt-8 text-base mx-auto max-w-6xl text-center">
-                {callAnalyse}
+                {/* Analyse */}
               </p>
             )}
           </section>
