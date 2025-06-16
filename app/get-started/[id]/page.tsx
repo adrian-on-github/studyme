@@ -15,66 +15,61 @@ import { media } from "@/constants";
 import UserForm from "@/components/UserForm";
 import { PhoneCall, PhoneOff } from "lucide-react";
 import { vapi } from "@/lib/vapi";
+import SubmitUserForm from "@/components/SubmitUserForm";
 
 enum callStatus {
   INACTIVE = "INACTIVE",
   CONNECTING = "CONNECTING",
   ACTIVE = "ACTIVE",
   FINISHED = "FINISHED",
+  DISCONNECTED = "DISCONNECTED",
 }
 
+type TranscriptMessage = {
+  type: "transcript";
+  role: "user" | "assistant" | string;
+  transcript: string;
+};
+
+type LogMessage = {
+  type: "log";
+  message: string;
+};
+
+type Message = (TranscriptMessage | LogMessage) & Record<string, unknown>;
+
 const Page = () => {
-  const [discoveryState, setDiscoveryState] = useState<string>("");
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [mount, setMount] = useState<boolean>(false);
   const [userInformations, setUserInformations] = useState<string>("");
+  const [discoveryState, setDiscoveryState] = useState<string>("");
   const [currentCallStatus, setCurrentCallStatus] = useState<callStatus>(
     callStatus.INACTIVE
   );
   const params = useParams<{ id: string }>();
 
   useEffect(() => {
-    if (discoveryState) {
-      const getUser = async () => {
-        const res = await fetch(`/api/user/getUser?userId=${params.id}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        if (!res.ok) {
-          console.error("Error GET User req", await res.text());
-          return;
-        }
-
-        const data = await res.json();
-        setUserData(data.userData);
-      };
-      getUser();
-    }
-
-    setMount(true);
-  }, [discoveryState]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const state = localStorage.getItem("discoveryState");
-      if (state) {
-        setDiscoveryState(state);
+    const getUser = async () => {
+      const res = await fetch(`/api/user/getUser?userId=${params.id}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (!res.ok) {
+        console.error("Error GET User req", await res.text());
+        return;
       }
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const state = localStorage.getItem("checkUserInformations");
-      if (state) {
-        setUserInformations(state);
-      }
+      const data = await res.json();
+      setUserData(data.userData);
+    };
+    getUser();
+
+    setTimeout(() => {
+      setMount(true);
     }, 1000);
-    return () => clearInterval(interval);
   }, []);
 
   let callAnalyse =
@@ -84,16 +79,32 @@ const Page = () => {
     const onCallStart = () => setCurrentCallStatus(callStatus.ACTIVE);
     const onCallEnd = () => setCurrentCallStatus(callStatus.FINISHED);
 
+    const onMessage = (message: Message) => {
+      if (message.type === "transcript") {
+        console.log(`${message.role}: ${message.transcript}`);
+      }
+
+      if (
+        message.type === "log" &&
+        message.message?.includes("recv transport changed to disconnected")
+      ) {
+        setCurrentCallStatus(callStatus.DISCONNECTED);
+      }
+    };
+
     const onSpeechStart = () => setIsSpeaking(true);
     const onSpeechEnd = () => setIsSpeaking(false);
 
-    const onError = (error: Error) => console.log(error);
+    const onError = (error: Error) => {
+      console.log(error);
+    };
 
     vapi.on("call-start", onCallStart);
     vapi.on("call-end", onCallEnd);
     vapi.on("speech-start", onSpeechStart);
     vapi.on("speech-end", onSpeechEnd);
     vapi.on("error", onError);
+    vapi.on("message", onMessage);
 
     return () => {
       vapi.off("call-start", onCallStart);
@@ -101,13 +112,14 @@ const Page = () => {
       vapi.off("speech-start", onSpeechStart);
       vapi.off("speech-end", onSpeechEnd);
       vapi.off("error", onError);
+      vapi.off("message", onMessage);
     };
   }, []);
 
   const handleCall = async () => {
     setCurrentCallStatus(callStatus.CONNECTING);
 
-    await vapi.start(process.env.NEXT_PUBLIC_VAPI_KEY, {
+    await vapi.start(process.env.NEXT_PUBLIC_VAPI_ASSISTANT_KEY, {
       variableValues: {
         fullname: userData?.fullname,
         userId: userData?.userId,
@@ -124,7 +136,36 @@ const Page = () => {
   useEffect(() => {
     if (currentCallStatus === "FINISHED") {
       localStorage.setItem("checkUserInformations", "set");
-      localStorage.remove("discoveryState");
+    }
+  }, [currentCallStatus]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const state = localStorage.getItem("checkUserInformations");
+      if (state) {
+        setUserInformations(state);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const state = localStorage.getItem("discoveryState");
+      if (state) {
+        setDiscoveryState(state);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (currentCallStatus === callStatus.DISCONNECTED) {
+      const timeout = setTimeout(() => {
+        vapi.start();
+      }, 1000);
+
+      return () => clearTimeout(timeout);
     }
   }, [currentCallStatus]);
 
@@ -166,7 +207,7 @@ const Page = () => {
                     draggable={false}
                   />
                   {isSpeaking && (
-                    <span className="animate-speak max-w-30 max-h-30" />
+                    <span className="animate-speak max-w-22 max-h-22" />
                   )}
                 </div>
 
@@ -236,7 +277,7 @@ const Page = () => {
             {currentCallStatus !== "FINISHED" && (
               <p className="pt-8 text-base mx-auto max-w-6xl text-center">
                 Congratulations! This is your first Meeting with our AI
-                Interviewer. Please do only speak in english. ✨
+                Interviewer. ✨
               </p>
             )}
             {currentCallStatus === "FINISHED" && (
@@ -247,7 +288,9 @@ const Page = () => {
           </section>
         </>
       ) : (
-        <p>Edit user informations</p>
+        <section className="px-10 pt-8 h-full w-full flex justify-center items-center flex-col">
+          <SubmitUserForm />
+        </section>
       )}
     </>
   );

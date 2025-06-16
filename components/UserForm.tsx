@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -51,7 +51,7 @@ const UserForm = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const params = useParams<{ id: string }>();
 
-  const handleSubmit = async ({ name, language }: SubmitProps) => {
+  const handleCreate = async ({ name, language }: SubmitProps) => {
     try {
       setLoading(true);
 
@@ -111,7 +111,8 @@ const UserForm = () => {
   return (
     <>
       <RedirectSession />
-      <section className="px-10 pt-8 h-full w-full flex justify-center items-center flex-col">
+
+      <section className="px-10 h-full w-full flex justify-center items-center flex-col">
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>Home page</BreadcrumbItem>
@@ -127,7 +128,7 @@ const UserForm = () => {
           className="w-full flex flex-col items-center"
           onSubmit={(e) => {
             e.preventDefault();
-            handleSubmit(formState);
+            handleCreate(formState);
           }}
         >
           <div className="w-full flex flex-col items-center gap-y-5">
@@ -187,9 +188,9 @@ const UserForm = () => {
               "Start Learning"
             )}
           </Button>
-          <p className="pt-8 text-base mx-auto max-w-6xl text-center">
-            On the User Informations page you provide informations about
-            yourself which will be used in every next interaction with StudyMe!
+          <p className="pt-5 text-base mx-auto max-w-6xl text-center">
+            These Informations will be used in every next interaction with
+            StudyMe. They can be changed everytime.
           </p>
         </form>
       </section>
