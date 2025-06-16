@@ -5,8 +5,7 @@ import { prisma } from "@/lib/prisma";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { searchParams } = new URL(req.url);
-    const userId = searchParams.get("userId");
+    const { userId, user } = body;
 
     if (!userId) {
       return NextResponse.json(
@@ -16,11 +15,8 @@ export async function POST(req: Request) {
     }
 
     const allowedFields = [
-      "email",
-      "image",
       "language",
       "fullname",
-      "studyReason",
       "learningMethod",
       "subject",
       "goal",
@@ -30,10 +26,10 @@ export async function POST(req: Request) {
     ];
 
     const filteredData = Object.fromEntries(
-      Object.entries(body).filter(([key]) => allowedFields.includes(key))
+      Object.entries(user).filter(([key]) => allowedFields.includes(key))
     );
 
-    const updatedUser = prisma.userData.update({
+    const updatedUser = await prisma.userData.update({
       where: {
         userId,
       },
@@ -42,6 +38,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, updatedUser }, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ success: false, error }, { status: 500 });
+    return NextResponse.json({ success: false, error }, { status: 400 });
   }
 }

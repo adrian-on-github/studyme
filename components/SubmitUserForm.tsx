@@ -11,14 +11,10 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
   BrainCircuit,
-  EarthLock,
   Goal,
-  GraduationCap,
   Languages,
   LibraryBig,
   Loader2Icon,
-  PlugZap,
-  Plus,
   Pyramid,
   School,
   UserPen,
@@ -35,19 +31,7 @@ import { useParams } from "next/navigation";
 import { Textarea } from "./ui/textarea";
 import RedirectSession from "@/components/RedirectSession";
 import type { UserData } from "@prisma/client";
-
-const examples = [
-  { label: "🎯 Preparing for interviews", value: "interviews" },
-  { label: "📈 Improving grades", value: "better-grades" },
-  { label: "📝 Getting help with homework", value: "homework-help" },
-  { label: "📚 Learning new skills", value: "new-skills" },
-  { label: "🧠 Preparing for exams", value: "exams" },
-  { label: "💼 Exploring career options", value: "career-options" },
-  { label: "🎓 Enhancing subject knowledge", value: "subject-knowledge" },
-  { label: "🛠️ Completing school projects", value: "school-projects" },
-  { label: "📊 Studying for standardized tests", value: "standardized-tests" },
-  { label: "⌛ Learning at own pace", value: "self-paced" },
-];
+import { useRouter } from "next/navigation";
 
 const learningMethods = [
   { label: "📚 Reading & Writing", value: "reading-writing" },
@@ -128,7 +112,6 @@ const subjects = [
 interface SubmitProps {
   name: string;
   language: string;
-  reason: string;
   method: string;
   subject: string;
   additionalContext: string;
@@ -141,7 +124,6 @@ const SubmitUserForm = () => {
   const [formState, setFormState] = useState<SubmitProps>({
     name: "",
     language: "",
-    reason: "",
     method: "",
     subject: "",
     goal: "",
@@ -155,11 +137,11 @@ const SubmitUserForm = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [mount, setMount] = useState<boolean>(false);
   const params = useParams<{ id: string }>();
+  const router = useRouter();
 
   const handleSubmit = async ({
     name,
     language,
-    reason,
     method,
     subject,
     goal,
@@ -170,11 +152,9 @@ const SubmitUserForm = () => {
     try {
       setErrorMessage("");
       setLoading(true);
-      console.log(formState);
       if (
         name.trim() === "" ||
         language.trim() === "" ||
-        reason.trim() === "" ||
         method.trim() === "" ||
         subject.trim() === ""
       ) {
@@ -182,33 +162,35 @@ const SubmitUserForm = () => {
         return;
       }
 
-      const resSubmit = await fetch(`/api/user/update/${params.id}`, {
+      const res = await fetch(`/api/user/update`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          userId: params.id,
           user: {
             fullname: name,
             language: language,
-            studyReason: reason,
             learningMethod: method,
             goal: goal,
             educationalInstitution: educationalInstitution,
             academicLevel: academicLevel,
             subject: subject,
-            additional_context: additionalContext,
+            additional_informations: additionalContext,
           },
         }),
       });
-
-      if (resSubmit.status === 500) {
-        setErrorMessage("Form couldn't submit. Please try later again");
+      if (!res.ok) {
+        setErrorMessage("Something went wrong!");
+        return;
       }
-      const submit = await resSubmit.json();
-      if (!submit.success) {
+
+      const data = await res.json();
+      if (!data.success) {
         setErrorMessage("Something went wrong!");
       }
+      console.log(data.updatedUser);
 
       localStorage.removeItem("discoveryState");
       localStorage.removeItem("checkUserInformations");
@@ -253,7 +235,6 @@ const SubmitUserForm = () => {
       setFormState({
         name: userData.fullname || "",
         language: userData.language || "",
-        reason: userData.studyReason || "",
         method: userData.learningMethod || "",
         subject: userData.subject || "",
         goal: userData.goal || "",
@@ -263,6 +244,19 @@ const SubmitUserForm = () => {
       });
     }
   }, [userData]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const discoveryState = localStorage.getItem("discoveryState");
+      const checkUserState = localStorage.getItem("checkUserInformations");
+
+      if (!discoveryState && !checkUserState) {
+        router.push("/dashboard");
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   if (!mount) return null;
 
@@ -305,7 +299,7 @@ const SubmitUserForm = () => {
               </Label>
               <Input
                 type="text"
-                defaultValue={userData?.fullname}
+                defaultValue={userData?.fullname || formState.name || ""}
                 id="fullname"
                 placeholder={userData?.fullname || "Full Name"}
                 onChange={(e) =>
@@ -320,39 +314,16 @@ const SubmitUserForm = () => {
                 Language
               </Label>
               <Select
-                defaultValue={userData?.language}
+                value={userData?.language || formState.language || ""}
                 onValueChange={(language) =>
                   setFormState({ ...formState, language: language })
                 }
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder={userData?.language || "Language"} />
+                  <SelectValue placeholder="Language" />
                 </SelectTrigger>
                 <SelectContent>
                   {languageList.map(({ label, value }) => (
-                    <SelectItem value={value} key={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="lg:w-2/3 w-full items-start gap-2 flex flex-col justify-center">
-              <Label htmlFor="message">
-                <PlugZap size={15} className="mr-1" />
-                Study Reason:
-              </Label>
-              <Select
-                defaultValue={userData?.studyReason || ""}
-                onValueChange={(x) => setFormState({ ...formState, reason: x })}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue
-                    placeholder={userData?.studyReason || "Study Reason"}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {examples.map(({ label, value }) => (
                     <SelectItem value={value} key={value}>
                       {label}
                     </SelectItem>
@@ -366,13 +337,11 @@ const SubmitUserForm = () => {
                 Learning Method
               </Label>
               <Select
-                defaultValue={userData?.learningMethod || ""}
+                value={userData?.learningMethod || formState.method || ""}
                 onValueChange={(m) => setFormState({ ...formState, method: m })}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue
-                    placeholder={userData?.learningMethod || "Learning Method"}
-                  />
+                  <SelectValue placeholder="Learning Method" />
                 </SelectTrigger>
                 <SelectContent>
                   {learningMethods.map(({ label, value }) => (
@@ -390,13 +359,13 @@ const SubmitUserForm = () => {
                 Subject for Improvement
               </Label>
               <Select
-                defaultValue={userData?.subject || ""}
+                value={userData?.subject || formState.subject || ""}
                 onValueChange={(s) =>
                   setFormState({ ...formState, subject: s })
                 }
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder={userData?.subject || "Subject"} />
+                  <SelectValue placeholder="Subject" />
                 </SelectTrigger>
                 <SelectContent>
                   {subjects.map(({ label, value }) => (
@@ -413,11 +382,11 @@ const SubmitUserForm = () => {
                 Study Goal
               </Label>
               <Select
-                defaultValue={userData?.goal || ""}
+                value={userData?.goal || formState.goal || ""}
                 onValueChange={(e) => setFormState({ ...formState, goal: e })}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder={userData?.goal || "Goal"} />
+                  <SelectValue placeholder="Goal" />
                 </SelectTrigger>
                 <SelectContent>
                   {goals.map(({ label, value }) => (
@@ -434,18 +403,17 @@ const SubmitUserForm = () => {
                 Educational Institution
               </Label>
               <Select
-                defaultValue={userData?.educationalInstitution || ""}
+                value={
+                  userData?.educationalInstitution ||
+                  formState.educationalInstitution ||
+                  ""
+                }
                 onValueChange={(e) =>
                   setFormState({ ...formState, educationalInstitution: e })
                 }
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue
-                    placeholder={
-                      userData?.educationalInstitution ||
-                      "Educational Institution"
-                    }
-                  />
+                  <SelectValue placeholder="Educational Institution" />
                 </SelectTrigger>
                 <SelectContent>
                   {educationalInstitutions.map(({ label, value }) => (
@@ -462,15 +430,13 @@ const SubmitUserForm = () => {
                 Your Academic Level
               </Label>
               <Select
-                defaultValue={userData?.academicLevel || ""}
+                value={userData?.academicLevel || formState.academicLevel || ""}
                 onValueChange={(e) =>
                   setFormState({ ...formState, academicLevel: e })
                 }
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue
-                    placeholder={userData?.academicLevel || "Academic Level"}
-                  />
+                  <SelectValue placeholder="Academic Level" />
                 </SelectTrigger>
                 <SelectContent>
                   {academicLevels.map(({ label, value }) => (
@@ -484,11 +450,12 @@ const SubmitUserForm = () => {
             <div className="lg:w-2/3 w-full items-start gap-2 flex flex-col justify-center">
               <Label htmlFor="message">Additional Context</Label>
               <Textarea
-                defaultValue={userData?.additional_informations || ""}
-                placeholder={
+                value={
                   userData?.additional_informations ||
-                  "Type any additional context in here..."
+                  formState.additionalContext ||
+                  ""
                 }
+                placeholder="Type any additional context in here..."
                 id="message"
                 className="bg-white"
                 onChange={(e) =>

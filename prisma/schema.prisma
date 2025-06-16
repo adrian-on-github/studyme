@@ -25,7 +25,6 @@ model UserData {
   image String
   language String
   fullname String
-  studyReason String?
   learningMethod String?
   subject String?
   goal String?

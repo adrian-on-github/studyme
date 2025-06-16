@@ -14,8 +14,9 @@ import Image from "next/image";
 import { media } from "@/constants";
 import UserForm from "@/components/UserForm";
 import { PhoneCall, PhoneOff } from "lucide-react";
-import { vapi } from "@/lib/vapi";
 import SubmitUserForm from "@/components/SubmitUserForm";
+import { vapiClient } from "@/lib/vapi";
+import { vapi } from "@/lib/vapi";
 
 enum callStatus {
   INACTIVE = "INACTIVE",
@@ -72,9 +73,6 @@ const Page = () => {
     }, 1000);
   }, []);
 
-  let callAnalyse =
-    "Im Adrian 25 years old and this is a casual placeholder for any additional Context.";
-
   useEffect(() => {
     const onCallStart = () => setCurrentCallStatus(callStatus.ACTIVE);
     const onCallEnd = () => setCurrentCallStatus(callStatus.FINISHED);
@@ -117,15 +115,29 @@ const Page = () => {
   }, []);
 
   const handleCall = async () => {
-    setCurrentCallStatus(callStatus.CONNECTING);
+    try {
+      setCurrentCallStatus(callStatus.CONNECTING);
 
-    await vapi.start(process.env.NEXT_PUBLIC_VAPI_ASSISTANT_KEY, {
-      variableValues: {
-        fullname: userData?.fullname,
-        userId: userData?.userId,
-        language: userData?.language,
-      },
-    });
+      if (!userData?.userId || !userData?.fullname || !userData?.language) {
+        setCurrentCallStatus(callStatus.INACTIVE);
+        return;
+      }
+
+      await vapiClient.calls.create({
+        workflowId: "eccfd543-fa18-458c-9b51-1b7a285fd191",
+        assistantOverrides: {
+          variableValues: {
+            fullname: userData.fullname,
+            userId: userData.userId,
+            language: userData.language,
+          },
+        },
+      });
+
+      setCurrentCallStatus(callStatus.ACTIVE);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleDisconnect = async () => {
@@ -168,6 +180,9 @@ const Page = () => {
       return () => clearTimeout(timeout);
     }
   }, [currentCallStatus]);
+
+  let callAnalyse =
+    "Im Adrian 25 years old and this is a casual placeholder for any additional Context.";
 
   if (!mount || !params.id) return null;
 

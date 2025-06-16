@@ -6,7 +6,6 @@ import type { UserData } from "@prisma/client";
 const Dashboard = () => {
   const { data: session } = useSession();
   const [user, setUser] = useState<UserData | null>(null);
-  const [mount, setMount] = useState<boolean>(false);
 
   useEffect(() => {
     const getUserData = async () => {
@@ -33,10 +32,8 @@ const Dashboard = () => {
     };
 
     getUserData();
-    setMount(true);
   }, [session]);
 
-  if (!mount) return null;
   return (
     <>
       <div className="p-7 flex items-start justify-start flex-col gap-y-12 w-full relative">
