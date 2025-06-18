@@ -25,12 +25,6 @@ enum callStatus {
   DISCONNECTED = "DISCONNECTED",
 }
 
-type VapiCreateResponse = {
-  data?: {
-    webCallUrl?: string;
-  };
-};
-
 const Page = () => {
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -41,7 +35,6 @@ const Page = () => {
     callStatus.INACTIVE
   );
   const params = useParams<{ id: string }>();
-  const [webCallUrl, setWebCallUrl] = useState<string | null>(null);
 
   const handleCall = async () => {
     try {
@@ -62,26 +55,24 @@ const Page = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          fullname: userData.fullname,
-          userId: userData.userId,
-          language: userData.language,
+          user: {
+            fullname: userData.fullname,
+            userId: userData.userId,
+            language: userData.language,
+          },
         }),
       });
 
-      if (!res.ok) {
-        setCurrentCallStatus(callStatus.DISCONNECTED);
-        console.error(await res.text());
-      }
+      const { data, callId, success } = await res.json();
 
-      const callData: VapiCreateResponse = await res.json();
-
-      if (callData?.data?.webCallUrl) {
-        setWebCallUrl(callData.data.webCallUrl);
-        setCurrentCallStatus(callStatus.ACTIVE);
-      } else {
-        console.error("webCallUrl not found in response");
+      if (!res.ok || !success) {
         setCurrentCallStatus(callStatus.INACTIVE);
+        console.error(data);
       }
+
+      await vapi.start(callId);
+
+      console.log(data);
     } catch (error) {
       console.error(error);
     }
@@ -137,7 +128,7 @@ const Page = () => {
   useEffect(() => {
     if (currentCallStatus === callStatus.DISCONNECTED) {
       const timeout = setTimeout(() => {
-        vapi.start();
+        // vapi.start();
       }, 3000);
 
       return () => clearTimeout(timeout);
@@ -229,37 +220,27 @@ const Page = () => {
                 <p className="text-2xl font-semibold pt-4">AI Interviewer</p>
               </div>
               <div className="flex flex-col gap-y-3 items-center justify-center w-1/2 bg-black/10 backdrop-blur-md border border-black/20 rounded-lg max-h-7xl h-4/4 relative">
-                {webCallUrl && currentCallStatus === callStatus.ACTIVE ? (
-                  <div className="w-full h-[600px]">
-                    <iframe
-                      src={webCallUrl}
-                      className="w-full h-full border rounded-lg"
-                      allow="microphone; camera; autoplay"
+                <>
+                  <div className="flex flex-col relative items-center justify-center p-8">
+                    <Image
+                      src={
+                        userData?.image ||
+                        "https://upload.wikimedia.org/wikipedia/commons/6/68/Solid_black.png"
+                      }
+                      width={95}
+                      height={95}
+                      className="object-cover rounded-full"
+                      alt={userData?.fullname || "Image"}
+                      draggable={false}
                     />
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex flex-col relative items-center justify-center p-8">
-                      <Image
-                        src={
-                          userData?.image ||
-                          "https://upload.wikimedia.org/wikipedia/commons/6/68/Solid_black.png"
-                        }
-                        width={95}
-                        height={95}
-                        className="object-cover rounded-full"
-                        alt={userData?.fullname || "Image"}
-                        draggable={false}
-                      />
-                      {isSpeaking && (
-                        <span className="animate-speak max-w-30 max-h-30" />
-                      )}
-                    </div>{" "}
-                    <p className="text-2xl font-semibold pt-4">
-                      {userData?.fullname || "You"}
-                    </p>
-                  </>
-                )}
+                    {isSpeaking && (
+                      <span className="animate-speak max-w-30 max-h-30" />
+                    )}
+                  </div>{" "}
+                  <p className="text-2xl font-semibold pt-4">
+                    {userData?.fullname || "You"}
+                  </p>
+                </>
               </div>
             </div>
             <Button
@@ -276,7 +257,7 @@ const Page = () => {
                   : "bg-green-500 animate-pulse"
               }`}
               onClick={() =>
-                webCallUrl && currentCallStatus === "ACTIVE"
+                currentCallStatus === "ACTIVE"
                   ? handleDisconnect()
                   : currentCallStatus === "FINISHED"
                   ? handleFinishCall()
