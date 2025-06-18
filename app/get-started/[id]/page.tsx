@@ -13,7 +13,7 @@ import type { UserData } from "@prisma/client";
 import Image from "next/image";
 import { media } from "@/constants";
 import UserForm from "@/components/UserForm";
-import { PhoneCall, PhoneOff } from "lucide-react";
+import { PhoneCall, PhoneOff, Video, Zap } from "lucide-react";
 import SubmitUserForm from "@/components/SubmitUserForm";
 import { vapi } from "@/lib/vapi";
 
@@ -24,6 +24,12 @@ enum callStatus {
   FINISHED = "FINISHED",
   DISCONNECTED = "DISCONNECTED",
 }
+
+type VapiCreateResponse = {
+  data?: {
+    webCallUrl?: string;
+  };
+};
 
 const Page = () => {
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
@@ -37,38 +43,19 @@ const Page = () => {
   const params = useParams<{ id: string }>();
   const [webCallUrl, setWebCallUrl] = useState<string | null>(null);
 
-  useEffect(() => {
-    const getUser = async () => {
-      const res = await fetch(`/api/user/getUser?userId=${params.id}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if (!res.ok) {
-        console.error("Error GET User req", await res.text());
-        return;
-      }
-
-      const data = await res.json();
-      setUserData(data.userData);
-    };
-    getUser();
-
-    setTimeout(() => {
-      setMount(true);
-    }, 1000);
-  }, []);
-
   const handleCall = async () => {
     try {
+      if (
+        currentCallStatus === callStatus.CONNECTING ||
+        currentCallStatus === callStatus.DISCONNECTED
+      )
+        return;
       setCurrentCallStatus(callStatus.CONNECTING);
 
       if (!userData?.userId || !userData?.fullname || !userData?.language) {
         setCurrentCallStatus(callStatus.INACTIVE);
         return;
       }
-      console.log("Try2");
       const res = await fetch("/api/vapi/create", {
         method: "POST",
         headers: {
@@ -81,10 +68,15 @@ const Page = () => {
         }),
       });
 
-      const data = await res.json();
+      if (!res.ok) {
+        setCurrentCallStatus(callStatus.DISCONNECTED);
+        console.error(await res.text());
+      }
 
-      if (data?.data?.webCallUrl) {
-        setWebCallUrl(data.data.webCallUrl);
+      const callData: VapiCreateResponse = await res.json();
+
+      if (callData?.data?.webCallUrl) {
+        setWebCallUrl(callData.data.webCallUrl);
         setCurrentCallStatus(callStatus.ACTIVE);
       } else {
         console.error("webCallUrl not found in response");
@@ -146,11 +138,51 @@ const Page = () => {
     if (currentCallStatus === callStatus.DISCONNECTED) {
       const timeout = setTimeout(() => {
         vapi.start();
-      }, 1000);
+      }, 3000);
 
       return () => clearTimeout(timeout);
     }
   }, [currentCallStatus]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const getUser = async () => {
+      const res = await fetch(`/api/user/getUser?userId=${params.id}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (!res.ok) {
+        if (
+          currentCallStatus === "ACTIVE" ||
+          currentCallStatus === "CONNECTING"
+        ) {
+          setCurrentCallStatus(callStatus.DISCONNECTED);
+        }
+        console.error("Error GET User req", await res.text());
+        return;
+      }
+
+      const data = await res.json();
+      if (!cancelled) {
+        setUserData(data.userData);
+      }
+    };
+    getUser();
+
+    const timeout = setTimeout(() => {
+      if (!cancelled) {
+        setMount(true);
+      }
+    }, 1000);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
+  }, []);
 
   if (!mount || !params.id) return null;
 
@@ -239,6 +271,8 @@ const Page = () => {
                   ? "bg-amber-500 animate-pulse"
                   : currentCallStatus === "FINISHED"
                   ? "bg-black/20"
+                  : currentCallStatus === "DISCONNECTED"
+                  ? "bg-blue-500 animate-pulse"
                   : "bg-green-500 animate-pulse"
               }`}
               onClick={() =>
@@ -246,27 +280,34 @@ const Page = () => {
                   ? handleDisconnect()
                   : currentCallStatus === "FINISHED"
                   ? handleFinishCall()
+                  : currentCallStatus === "DISCONNECTED"
+                  ? () => {}
                   : handleCall()
               }
             >
               {currentCallStatus === "ACTIVE" ? (
                 <>
                   <PhoneOff />
-                  Leave Voice Call
+                  Leave Web Call
                 </>
               ) : currentCallStatus === "CONNECTING" ? (
                 <>
-                  <PhoneCall />
-                  Connecting to Voice Call
+                  <Video />
+                  Connecting to Web Call
                 </>
               ) : currentCallStatus === "FINISHED" ? (
                 <>
-                  <p className="text-black">Voice Call Finished</p>
+                  <p className="text-black">Web Call Finished</p>
+                </>
+              ) : currentCallStatus === "DISCONNECTED" ? (
+                <>
+                  <Zap />
+                  Trying to connect again...
                 </>
               ) : (
                 <>
                   <PhoneCall />
-                  Join Voice Call
+                  Join Web Call
                 </>
               )}
             </Button>
@@ -274,7 +315,7 @@ const Page = () => {
             {currentCallStatus !== "FINISHED" && (
               <p className="pt-8 text-base mx-auto max-w-6xl text-center">
                 Congratulations! This is your first Meeting with our AI
-                Interviewer. ✨
+                Interviewer. Please talk in english. ✨
               </p>
             )}
             {currentCallStatus === "FINISHED" && (
