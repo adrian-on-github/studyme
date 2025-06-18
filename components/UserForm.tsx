@@ -34,8 +34,15 @@ const languageList = [
   { label: "🇩🇪 German", value: "german" },
   { label: "🇪🇸 Spanish", value: "spanish" },
   { label: "🇫🇷 French", value: "french" },
+  { label: "🇮🇹 Italian", value: "italian" },
+  { label: "🇨🇳 Chinese (Mandarin)", value: "chinese" },
+  { label: "🇯🇵 Japanese", value: "japanese" },
+  { label: "🇰🇷 Korean", value: "korean" },
+  { label: "🇷🇺 Russian", value: "russian" },
+  { label: "🇵🇹 Portuguese", value: "portuguese" },
+  { label: "🇮🇳 Hindi", value: "hindi" },
+  { label: "Arabic", value: "arabic" },
 ];
-
 interface SubmitProps {
   name: string;
   language: string;

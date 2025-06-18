@@ -9,12 +9,12 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(cuid())
+  id            String   @id @default(uuid())
   name          String?
   email         String  @unique
   emailVerified DateTime?
   image         String?
-  accounts      Account[]
+  account      Account?
   sessions      Session[]
   userData UserData?
 }
@@ -35,8 +35,8 @@ model UserData {
 }
 
 model Account {
-  id                 String   @id @default(cuid())
-  userId             String
+  id                 String   @id @default(uuid())
+  userId             String @unique
   type               String
   provider           String
   providerAccountId  String

@@ -4,15 +4,21 @@ export async function POST(req: Request, res: Response) {
   try {
     const { userId, fullname, language } = await req.json();
 
-    const res = await fetch("https://api.vapi.ai/call", {
+    if (!userId || !fullname || !language) {
+      return NextResponse.json(
+        { message: "Variables are missing" },
+        { status: 400 }
+      );
+    }
+
+    const res = await fetch("https://api.vapi.ai/call/web", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.VAPI_API_KEY}`,
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_VAPI_KEY}`,
       },
       body: JSON.stringify({
         workflowId: "eccfd543-fa18-458c-9b51-1b7a285fd191",
-        type: "inboundCall",
       }),
     });
     if (!res.ok) {
