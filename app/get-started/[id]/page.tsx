@@ -16,6 +16,7 @@ import UserForm from "@/components/UserForm";
 import { PhoneCall, PhoneOff, Video, Zap } from "lucide-react";
 import SubmitUserForm from "@/components/SubmitUserForm";
 import { vapi } from "@/lib/vapi";
+import { vapiClient } from "@/lib/vapi";
 
 enum callStatus {
   INACTIVE = "INACTIVE",
@@ -49,30 +50,30 @@ const Page = () => {
         setCurrentCallStatus(callStatus.INACTIVE);
         return;
       }
-      const res = await fetch("/api/vapi/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user: {
-            fullname: userData.fullname,
-            userId: userData.userId,
-            language: userData.language,
-          },
-        }),
-      });
+      // const res = await fetch("/api/vapi/create", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({
+      //     user: {
+      //       fullname: userData.fullname,
+      //       userId: userData.userId,
+      //       language: userData.language,
+      //     },
+      //   }),
+      // });
+      // const data = await res.json();
 
-      const { data, callId, success } = await res.json();
+      // if (!res.ok || !data.success) {
+      //   setCurrentCallStatus(callStatus.INACTIVE);
+      //   console.error(data.callData);
+      // } else {
+      //   setCurrentCallStatus(callStatus.ACTIVE);
+      //   console.log(data.callData);
+      // }
 
-      if (!res.ok || !success) {
-        setCurrentCallStatus(callStatus.INACTIVE);
-        console.error(data);
-      }
-
-      await vapi.start(callId);
-
-      console.log(data);
+      await vapi.start({});
     } catch (error) {
       console.error(error);
     }
