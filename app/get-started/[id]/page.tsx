@@ -14,9 +14,7 @@ import Image from "next/image";
 import { media } from "@/constants";
 import UserForm from "@/components/UserForm";
 import { PhoneCall, PhoneOff, Video, Zap } from "lucide-react";
-import SubmitUserForm from "@/components/SubmitUserForm";
 import { vapi } from "@/lib/vapi";
-import { vapiClient } from "@/lib/vapi";
 
 enum callStatus {
   INACTIVE = "INACTIVE",
@@ -30,12 +28,13 @@ const Page = () => {
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [mount, setMount] = useState<boolean>(false);
-  const [userInformations, setUserInformations] = useState<string>("");
   const [discoveryState, setDiscoveryState] = useState<string>("");
   const [currentCallStatus, setCurrentCallStatus] = useState<callStatus>(
     callStatus.INACTIVE
   );
   const params = useParams<{ id: string }>();
+
+  let prompt = ``;
 
   const handleCall = async () => {
     try {
@@ -50,30 +49,14 @@ const Page = () => {
         setCurrentCallStatus(callStatus.INACTIVE);
         return;
       }
-      // const res = await fetch("/api/vapi/create", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({
-      //     user: {
-      //       fullname: userData.fullname,
-      //       userId: userData.userId,
-      //       language: userData.language,
-      //     },
-      //   }),
-      // });
-      // const data = await res.json();
 
-      // if (!res.ok || !data.success) {
-      //   setCurrentCallStatus(callStatus.INACTIVE);
-      //   console.error(data.callData);
-      // } else {
-      //   setCurrentCallStatus(callStatus.ACTIVE);
-      //   console.log(data.callData);
-      // }
-
-      await vapi.start({});
+      await vapi.start("68ad748b-d8d4-4b80-9325-26c14df2c267", {
+        variableValues: {
+          name: userData.fullname,
+          language: userData.language,
+          systemPrompt: prompt,
+        },
+      });
     } catch (error) {
       console.error(error);
     }
@@ -114,22 +97,16 @@ const Page = () => {
         setDiscoveryState(state);
       }
     }, 1000);
-    const intervalUserState = setInterval(() => {
-      const state = localStorage.getItem("checkUserInformations");
-      if (state) {
-        setUserInformations(state);
-      }
-    }, 1000);
+
     return () => {
       clearInterval(intervalDiscoveryState);
-      clearInterval(intervalUserState);
     };
   }, []);
 
   useEffect(() => {
     if (currentCallStatus === callStatus.DISCONNECTED) {
       const timeout = setTimeout(() => {
-        // vapi.start();
+        vapi.start();
       }, 3000);
 
       return () => clearTimeout(timeout);
@@ -180,13 +157,13 @@ const Page = () => {
 
   return (
     <>
-      {!discoveryState && !userInformations ? (
+      {!discoveryState ? (
         <>
           <section className="px-10 pt-8 h-full w-full flex justify-center items-center flex-col">
             <UserForm />
           </section>
         </>
-      ) : discoveryState && !userInformations ? (
+      ) : (
         <>
           <section className="px-10 h-full w-full flex justify-center items-center flex-col">
             <Breadcrumb className="pt-8">
@@ -234,9 +211,6 @@ const Page = () => {
                       alt={userData?.fullname || "Image"}
                       draggable={false}
                     />
-                    {isSpeaking && (
-                      <span className="animate-speak max-w-30 max-h-30" />
-                    )}
                   </div>{" "}
                   <p className="text-2xl font-semibold pt-4">
                     {userData?.fullname || "You"}
@@ -307,10 +281,6 @@ const Page = () => {
             )}
           </section>
         </>
-      ) : (
-        <section className="px-10 pt-8 h-full w-full flex justify-center items-center flex-col">
-          <SubmitUserForm />
-        </section>
       )}
     </>
   );

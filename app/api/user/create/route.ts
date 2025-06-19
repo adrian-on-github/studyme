@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { user } = await req.json();
+    const { data, user } = await req.json();
 
     if (!user) {
       return NextResponse.json({ status: 404 });
@@ -14,10 +14,15 @@ export async function POST(req: Request) {
         user: {
           connect: { id: user.userId },
         },
-        email: user.email,
-        image: user.image || null,
-        language: user.language,
-        fullname: user.fullname,
+        language: data.language,
+        fullname: data.fullname,
+        learningMethod: data.learningMethod,
+        subject: data.subject,
+        goal: data.goal,
+        educationalInstitution: data.educationalInstitution,
+        academicLevel: data.academicLevel,
+        email: data.email,
+        image: data.image || "",
       },
     });
 

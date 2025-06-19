@@ -28,8 +28,8 @@ model UserData {
   learningMethod String?
   subject String?
   goal String?
-  educationalInstitution String?
-  academicLevel String?
+  educationalInstitution String
+  academicLevel String
   additional_informations String?
   user User @relation(fields: [userId], references: [id])
 }
