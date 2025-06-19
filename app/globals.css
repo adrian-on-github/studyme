@@ -135,5 +135,5 @@
 }
 
 .animate-speak {
-  @apply absolute inline-flex size-5/6 animate-ping rounded-full bg-green-500 opacity-60;
+  @apply absolute inline-flex size-5/6 animate-ping rounded-full bg-black opacity-60;
 }

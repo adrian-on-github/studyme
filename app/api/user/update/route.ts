@@ -5,9 +5,9 @@ import { prisma } from "@/lib/prisma";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { userId, user } = body;
+    const { user, data } = body;
 
-    if (!userId) {
+    if (!user.userId) {
       return NextResponse.json(
         { message: "Server Error. No userId found" },
         { status: 500 }
@@ -26,12 +26,12 @@ export async function POST(req: Request) {
     ];
 
     const filteredData = Object.fromEntries(
-      Object.entries(user).filter(([key]) => allowedFields.includes(key))
+      Object.entries(data).filter(([key]) => allowedFields.includes(key))
     );
 
     const updatedUser = await prisma.userData.update({
       where: {
-        userId,
+        userId: user.userid,
       },
       data: filteredData,
     });

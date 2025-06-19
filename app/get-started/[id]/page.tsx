@@ -67,9 +67,7 @@ const Page = () => {
     setCurrentCallStatus(callStatus.FINISHED);
   };
 
-  const handleFinishCall = () => {
-    localStorage.setItem("checkUserInformations", "set");
-  };
+  const handleFinishCall = () => {};
 
   useEffect(() => {
     const onCallStart = () => setCurrentCallStatus(callStatus.ACTIVE);
@@ -199,19 +197,16 @@ const Page = () => {
               </div>
               <div className="flex flex-col gap-y-3 items-center justify-center w-1/2 bg-black/10 backdrop-blur-md border border-black/20 rounded-lg max-h-7xl h-4/4 relative">
                 <>
-                  <div className="flex flex-col relative items-center justify-center p-8">
+                  <div className="flex flex-col relative items-center justify-center w-30 h-30 bg-black/5 rounded-full">
                     <Image
-                      src={
-                        userData?.image ||
-                        "https://upload.wikimedia.org/wikipedia/commons/6/68/Solid_black.png"
-                      }
-                      width={95}
-                      height={95}
-                      className="object-cover rounded-full"
+                      src={userData?.image || ""}
+                      width={105}
+                      height={105}
+                      className="rounded-full"
                       alt={userData?.fullname || "Image"}
                       draggable={false}
                     />
-                  </div>{" "}
+                  </div>
                   <p className="text-2xl font-semibold pt-4">
                     {userData?.fullname || "You"}
                   </p>

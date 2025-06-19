@@ -11,12 +11,10 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
   BrainCircuit,
-  EarthLock,
   Goal,
   Languages,
   LibraryBig,
   Loader2Icon,
-  PlugZap,
   Pyramid,
   School,
   UserPen,
@@ -32,7 +30,6 @@ import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
 import RedirectSession from "@/components/RedirectSession";
 import type { User } from "@prisma/client";
-import { Textarea } from "./ui/textarea";
 
 const learningMethods = [
   { label: "📚 Reading & Writing", value: "reading-writing" },
