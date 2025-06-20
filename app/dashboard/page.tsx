@@ -2,6 +2,52 @@
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import type { UserData } from "@prisma/client";
+import { AudioLines, ChevronRight, Handshake, Workflow } from "lucide-react";
+import { AnalysisChart } from "@/components/AnalysisChart";
+
+interface SectionCard {
+  title: string;
+  description: string;
+  icon: React.ReactElement;
+  href: string;
+  color: string;
+}
+
+interface LargeSectionCard {}
+
+const SectionCard = ({
+  title,
+  description,
+  icon,
+  href,
+  color,
+}: SectionCard) => {
+  return (
+    <>
+      <a
+        className="flex w-1/3 items-center justify-center py-4 border border-black/10 bg-black/1 rounded-2xl gap-x-3 hover:opacity-60 cursor-pointer transition duration-200"
+        href={href}
+      >
+        <div className={`p-1 rounded-xl ${color}`}>{icon}</div>
+        <div className="flex gap-x-2 flex-col">
+          <h1 className="font-semibold text-2xl">{title}</h1>
+          <p className="text-gray-700 p">{description}</p>
+        </div>
+        <ChevronRight />
+      </a>
+    </>
+  );
+};
+
+const LargeSectionCard = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <>
+      <div className="min-h-[50vh] flex w-full items-center justify-center py-4 border border-black/10 bg-black/1 rounded-md gap-x-3">
+        {children}
+      </div>
+    </>
+  );
+};
 
 const Dashboard = () => {
   const { data: session } = useSession();
@@ -22,7 +68,6 @@ const Dashboard = () => {
         });
         const data = await res.json();
         console.log(data.user);
-        console.log("hi");
         if (data.exists && data.user) {
           setUser(data.user);
         }
@@ -36,12 +81,53 @@ const Dashboard = () => {
 
   return (
     <>
-      <div className="p-7 flex items-start justify-start flex-col gap-y-12 w-full relative">
-        <h1 className="text-3xl lg:text-5xl p font-bold">
-          Welcome back {user?.fullname}!👋
-        </h1>
-        <div className="max-w-7xl mx-auto"></div>
-      </div>
+      <section className="flex w-full flex-col px-24">
+        <div className="pt-8 flex items-start justify-start">
+          <h1 className="text-3xl lg:text-5xl p font-bold">
+            Welcome {user?.fullname}!👋
+          </h1>
+        </div>
+        <div className="flex flex-row justify-center items-center mt-12 w-full gap-x-12">
+          <SectionCard
+            title="Homework Analyst"
+            description="Most useful assistant for explaining"
+            icon={
+              <>
+                <Workflow size={40} />
+              </>
+            }
+            href="#"
+            color="bg-blue-500/30"
+          />
+          <SectionCard
+            title="Learning Assistant"
+            description="Perfect for learning anything"
+            icon={
+              <>
+                <Handshake size={40} />
+              </>
+            }
+            href="#"
+            color="bg-yellow-500/30"
+          />
+          <SectionCard
+            title="Interview Coach"
+            description="Questions to any topic you want"
+            icon={
+              <>
+                <AudioLines size={40} />
+              </>
+            }
+            href="#"
+            color="bg-green-500/30"
+          />
+        </div>
+        <div className="w-full mt-6">
+          <LargeSectionCard>
+            <AnalysisChart />
+          </LargeSectionCard>
+        </div>
+      </section>
     </>
   );
 };

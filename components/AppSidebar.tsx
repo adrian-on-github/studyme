@@ -1,5 +1,5 @@
 import React from "react";
-import { AudioLines, ChartLine, Home, Library, Settings } from "lucide-react";
+import { AudioLines, Handshake, Home, Settings, Workflow } from "lucide-react";
 
 import {
   Sidebar,
@@ -19,19 +19,19 @@ const items = [
     icon: Home,
   },
   {
-    title: "AI Tutor Meeting",
+    title: "Homework Analyst",
+    url: "#",
+    icon: Workflow,
+  },
+  {
+    title: "Learning Assistant",
+    url: "#",
+    icon: Handshake,
+  },
+  {
+    title: "Interview Coach",
     url: "#",
     icon: AudioLines,
-  },
-  {
-    title: "Learning Path",
-    url: "#",
-    icon: Library,
-  },
-  {
-    title: "Homework Analyse",
-    url: "#",
-    icon: ChartLine,
   },
   {
     title: "Settings",

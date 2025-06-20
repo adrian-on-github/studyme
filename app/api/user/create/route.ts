@@ -16,7 +16,6 @@ export async function POST(req: Request) {
         },
         language: data.language,
         fullname: data.fullname,
-        learningMethod: data.learningMethod,
         subject: data.subject,
         goal: data.goal,
         educationalInstitution: data.educationalInstitution,
@@ -27,7 +26,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(
-      { success: true, user: createUser },
+      { success: true, user: createUser, data },
       { status: 200 }
     );
   } catch (error) {

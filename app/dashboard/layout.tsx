@@ -9,11 +9,13 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       <RedirectSession />
       <SidebarProvider>
         <AppSidebar />
-        <main className="w-full flex items-start flex-col">
+        <main className="w-full">
           <div className="border-b border-b-black/10 w-full flex p-4">
             <SidebarTrigger />
           </div>
-          <section className="max-w-full">{children}</section>
+          <section className="flex items-center justify-center">
+            {children}
+          </section>
         </main>
       </SidebarProvider>
     </div>

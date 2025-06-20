@@ -24,18 +24,29 @@ const RedirectSession = () => {
       }
       const data = await res.json();
       const id = data.userId;
-      const stateOne = localStorage.getItem("discoveryState");
-      if (!data.exists || stateOne || data.user === null) {
+      const userSession = localStorage.getItem("session");
+      if ((!data.exists || data.user === null) && !userSession) {
         router.push(`/get-started/${id}`);
-        console.log("no");
-      } else if (data.exists && !stateOne) {
-        console.log("yes");
+      } else if (data.exists && userSession) {
         router.push("/dashboard");
       }
     };
 
     checkUserExists();
   }, [session]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const userSession = localStorage.getItem("session");
+      if (userSession) {
+        router.push("/dashboard");
+      }
+    }, 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
 
   return null;
 };

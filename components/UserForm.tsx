@@ -30,18 +30,7 @@ import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
 import RedirectSession from "@/components/RedirectSession";
 import type { User } from "@prisma/client";
-
-const learningMethods = [
-  { label: "📚 Reading & Writing", value: "reading-writing" },
-  { label: "🎧 Listening & Audio", value: "listening-audio" },
-  { label: "🎥 Videos & Visuals", value: "videos-visuals" },
-  { label: "🧩 Interactive Exercises", value: "interactive-exercises" },
-  { label: "🗣️ Group Discussions", value: "group-discussions" },
-  { label: "📝 Practice Tests & Quizzes", value: "practice-tests" },
-  { label: "⏰ Self-Paced Learning", value: "self-paced" },
-  { label: "🧑‍🏫 One-on-One Tutoring", value: "one-on-one" },
-  { label: "🎮 Gamified Learning", value: "gamified-learning" },
-];
+import { useRouter } from "next/navigation";
 
 const languageList = [
   { label: "🇬🇧 English", value: "english" },
@@ -110,7 +99,6 @@ const subjects = [
 interface SubmitProps {
   name: string;
   language: string;
-  method: string;
   subject: string;
   goal: string;
   educationalInstitution: string;
@@ -121,7 +109,6 @@ const UserForm = () => {
   const [formState, setFormState] = useState<SubmitProps>({
     name: "",
     language: "",
-    method: "",
     subject: "",
     goal: "",
     educationalInstitution: "",
@@ -137,7 +124,6 @@ const UserForm = () => {
   const handleSubmit = async ({
     name,
     language,
-    method,
     subject,
     goal,
     educationalInstitution,
@@ -175,7 +161,6 @@ const UserForm = () => {
             image: user.image || null,
             language: language,
             fullname: name,
-            learningMethod: method,
             subject: subject,
             goal: goal,
             educationalInstitution: educationalInstitution,
@@ -192,7 +177,8 @@ const UserForm = () => {
       if (!data.success) {
         setErrorMessage("Something went wrong!");
       }
-      localStorage.setItem("discoveryState", "set");
+      console.log(data);
+      localStorage.setItem("session", JSON.stringify({ id: params.id }));
     } catch (error) {
       console.error(error);
       setErrorMessage("Unexpected error occurred. Please try again later.");
@@ -289,32 +275,11 @@ const UserForm = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="lg:w-2/3 w-full items-start gap-2 flex flex-col justify-center">
-              <Label htmlFor="message">
-                <BrainCircuit size={15} className="mr-1" />
-                <span className="text-red-500">*</span>Learning Method
-              </Label>
-              <Select
-                value={formState.method || ""}
-                onValueChange={(m) => setFormState({ ...formState, method: m })}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Learning Method" />
-                </SelectTrigger>
-                <SelectContent>
-                  {learningMethods.map(({ label, value }) => (
-                    <SelectItem value={value} key={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
 
             <div className="lg:w-2/3 w-full items-start gap-2 flex flex-col justify-center">
               <Label htmlFor="message">
                 <Pyramid size={15} className="mr-1" />
-                <span className="text-red-500">*</span>Subject for Improvement
+                Subject for Improvement
               </Label>
               <Select
                 value={formState.subject || ""}
@@ -337,7 +302,7 @@ const UserForm = () => {
             <div className="lg:w-2/3 w-full items-start gap-2 flex flex-col justify-center">
               <Label htmlFor="message">
                 <Goal size={15} className="mr-1" />
-                <span className="text-red-500">*</span>Study Goal
+                Study Goal
               </Label>
               <Select
                 value={formState.goal || ""}
