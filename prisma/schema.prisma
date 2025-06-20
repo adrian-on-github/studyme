@@ -32,6 +32,7 @@ model UserData {
   academicLevel String
   additional_informations String?
   user User @relation(fields: [userId], references: [id])
+  vapiCalls VapiCall[]
 }
 
 model Account {
@@ -51,6 +52,16 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+}
+
+model VapiCall {
+  id String @id
+  userId String
+  created_at String @map("createdAt")
+  assistantId String
+  summarizedText String
+  
+  user UserData @relation(fields: [userId], references: [userId])
 }
 
 model Session {

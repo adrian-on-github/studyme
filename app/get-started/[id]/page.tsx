@@ -13,7 +13,7 @@ import type { UserData } from "@prisma/client";
 import Image from "next/image";
 import { media } from "@/constants";
 import UserForm from "@/components/UserForm";
-import { PhoneCall, PhoneOff, Video, Zap } from "lucide-react";
+import { ChevronRight, PhoneCall, PhoneOff, Video, Zap } from "lucide-react";
 import { vapi } from "@/lib/vapi";
 
 enum callStatus {
@@ -24,17 +24,25 @@ enum callStatus {
   DISCONNECTED = "DISCONNECTED",
 }
 
+type Message = {
+  type: "transcript" | string;
+  role: "assistant" | "user" | string;
+  transcript: string;
+};
+
+type SpeakerRole = "user" | "assistant" | null;
+
 const Page = () => {
-  const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
+  const [isSpeaking, setIsSpeaking] = useState<SpeakerRole>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [mount, setMount] = useState<boolean>(false);
   const [discoveryState, setDiscoveryState] = useState<string>("");
+  const [callId, setCallId] = useState<string>("");
+  const [callSummary, setCallSummary] = useState<string>("");
   const [currentCallStatus, setCurrentCallStatus] = useState<callStatus>(
     callStatus.INACTIVE
   );
   const params = useParams<{ id: string }>();
-
-  let prompt = ``;
 
   const handleCall = async () => {
     try {
@@ -50,15 +58,57 @@ const Page = () => {
         return;
       }
 
-      await vapi.start("68ad748b-d8d4-4b80-9325-26c14df2c267", {
-        variableValues: {
-          name: userData.fullname,
-          language: userData.language,
-          systemPrompt: prompt,
-        },
-      });
+      const callData = await vapi.start(
+        "68ad748b-d8d4-4b80-9325-26c14df2c267",
+        {
+          variableValues: {
+            name: userData.fullname,
+            language: userData.language,
+            systemPrompt: prompt,
+          },
+        }
+      );
+
+      setCallId(callData?.id!);
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handleFinishCall = async () => {
+    try {
+      if (!userData || !callSummary) {
+        return;
+      }
+      const res = await fetch("/api/vapi/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user: {
+            userId: userData.userId,
+            subject: userData.subject,
+            learningMethod: userData?.learningMethod,
+            goal: userData.goal,
+            educationalInstitution: userData?.educationalInstitution,
+            academicLevel: userData?.academicLevel,
+            additionalInformations: callSummary,
+          },
+          callId,
+          assistantId: "68ad748b-d8d4-4b80-9325-26c14df2c267",
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        console.error(data);
+      }
+      console.log(data);
+
+      // finish call
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -67,26 +117,66 @@ const Page = () => {
     setCurrentCallStatus(callStatus.FINISHED);
   };
 
-  const handleFinishCall = () => {};
-
   useEffect(() => {
     const onCallStart = () => setCurrentCallStatus(callStatus.ACTIVE);
-    const onCallEnd = () => setCurrentCallStatus(callStatus.FINISHED);
-    const onSpeechStart = () => setIsSpeaking(true);
-    const onSpeechEnd = () => setIsSpeaking(false);
+    const onCallEnd = () => {
+      setCurrentCallStatus(callStatus.FINISHED);
+      setIsSpeaking(null);
+    };
+    const onSpeechStart = () => setIsSpeaking("assistant");
+    const onSpeechEnd = () => setIsSpeaking(null);
+    const onMessage = (message: Message) => {
+      console.log(
+        JSON.stringify(
+          {
+            messagetype: message.type,
+            messageRole: message.role,
+            messageTranscript: message.transcript,
+          },
+          null,
+          2
+        )
+      );
+
+      if (message.role === "user") {
+        setIsSpeaking("user");
+      } else if (message.role === "assistant") {
+        setIsSpeaking("assistant");
+      }
+    };
 
     vapi.on("call-start", onCallStart);
     vapi.on("call-end", onCallEnd);
     vapi.on("speech-start", onSpeechStart);
     vapi.on("speech-end", onSpeechEnd);
+    vapi.on("message", (message) => {
+      onMessage(message);
+    });
 
     return () => {
       vapi.off("call-start", onCallStart);
       vapi.off("call-end", onCallEnd);
       vapi.off("speech-start", onSpeechStart);
       vapi.off("speech-end", onSpeechEnd);
+      vapi.off("message", onMessage);
     };
   }, []);
+
+  useEffect(() => {
+    if (!callId) return;
+
+    const interval = setInterval(async () => {
+      const res = await fetch(`/api/vapi/getCall?callId=${callId}`);
+      const callData = await res.json();
+
+      if (callData.analysis?.summary) {
+        setCallSummary(callData.analysis.summary);
+        clearInterval(interval);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [callId]);
 
   useEffect(() => {
     const intervalDiscoveryState = setInterval(() => {
@@ -178,7 +268,7 @@ const Page = () => {
               </BreadcrumbList>
             </Breadcrumb>
             <div className="flex justify-center items-center gap-x-12 w-full mx-auto flex-row h-[40vh] pt-12">
-              <div className="flex flex-col gap-y-3 items-center justify-center w-1/2 p-8 bg-black/10 backdrop-blur-md border border-black/20 rounded-lg max-h-7xl h-4/4 relative">
+              <div className="flex flex-col gap-y-3 items-center justify-center w-1/2 p-8 bg-black/5 backdrop-blur-md border border-black/20 rounded-lg max-h-7xl h-4/4 relative">
                 <div className="flex flex-col relative items-center justify-center w-30 h-30 bg-black/5 rounded-full p-2">
                   <Image
                     src={media.avatar}
@@ -188,25 +278,28 @@ const Page = () => {
                     alt={userData?.fullname || "Image"}
                     draggable={false}
                   />
-                  {isSpeaking && (
+                  {isSpeaking === "assistant" && (
                     <span className="animate-speak max-w-22 max-h-22" />
                   )}
                 </div>
 
                 <p className="text-2xl font-semibold pt-4">AI Interviewer</p>
               </div>
-              <div className="flex flex-col gap-y-3 items-center justify-center w-1/2 bg-black/10 backdrop-blur-md border border-black/20 rounded-lg max-h-7xl h-4/4 relative">
+              <div className="flex flex-col gap-y-3 items-center justify-center w-1/2 bg-black/5 backdrop-blur-md border border-black/20 rounded-lg max-h-7xl h-4/4 relative">
                 <>
-                  <div className="flex flex-col relative items-center justify-center w-30 h-30 bg-black/5 rounded-full">
+                  <div className="flex flex-col relative items-center justify-center w-30 h-30 rounded-full">
                     <Image
-                      src={userData?.image || ""}
-                      width={105}
-                      height={105}
+                      src={userData?.image!}
+                      width={100}
+                      height={100}
                       className="rounded-full"
                       alt={userData?.fullname || "Image"}
                       draggable={false}
                     />
                   </div>
+                  {isSpeaking === "user" && (
+                    <span className="animate-speak max-w-22 max-h-22 relative top-1/4" />
+                  )}
                   <p className="text-2xl font-semibold pt-4">
                     {userData?.fullname || "You"}
                   </p>
@@ -214,14 +307,17 @@ const Page = () => {
               </div>
             </div>
             <Button
-              disabled={currentCallStatus === "FINISHED"}
-              className={`w-1/2 mt-12 min-h-[5vh] hover:opacity-80 rounded-full ${
+              disabled={
+                currentCallStatus === "DISCONNECTED" ||
+                currentCallStatus === "CONNECTING"
+              }
+              className={`w-1/2 mt-12 min-h-[5vh] hover:opacity-80 transition duration-200 rounded-full ${
                 currentCallStatus === "ACTIVE"
                   ? "bg-red-500"
                   : currentCallStatus === "CONNECTING"
                   ? "bg-amber-500 animate-pulse"
                   : currentCallStatus === "FINISHED"
-                  ? "bg-black/20"
+                  ? "bg-black/5"
                   : currentCallStatus === "DISCONNECTED"
                   ? "bg-blue-500 animate-pulse"
                   : "bg-green-500 animate-pulse"
@@ -248,7 +344,8 @@ const Page = () => {
                 </>
               ) : currentCallStatus === "FINISHED" ? (
                 <>
-                  <p className="text-black">Web Call Finished</p>
+                  <p className="text-black">Finish Introductory Meeting</p>
+                  <ChevronRight className="text-black" />
                 </>
               ) : currentCallStatus === "DISCONNECTED" ? (
                 <>
