@@ -11,9 +11,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           <div className="border-b border-b-black/10 w-full flex p-4">
             <SidebarTrigger />
           </div>
-          <section className="flex items-center justify-center">
-            {children}
-          </section>
+          <section>{children}</section>
         </main>
       </SidebarProvider>
     </div>

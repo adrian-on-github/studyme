@@ -10,7 +10,6 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
-  BrainCircuit,
   Goal,
   Languages,
   LibraryBig,
@@ -30,7 +29,6 @@ import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
 import RedirectSession from "@/components/RedirectSession";
 import type { User } from "@prisma/client";
-import { useRouter } from "next/navigation";
 
 const languageList = [
   { label: "🇬🇧 English", value: "english" },

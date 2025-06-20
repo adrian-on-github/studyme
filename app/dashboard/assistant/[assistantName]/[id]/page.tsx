@@ -2,9 +2,10 @@
 import React from "react";
 import { useParams } from "next/navigation";
 import CallPage from "@/components/CallPage";
+import InterviewAssistant from "@/components/assistants/InterviewAssistant";
 
 const Page = () => {
-  const params = useParams<{ assistantName: string }>();
+  const params = useParams<{ assistantName: string; id: string }>();
   console.log(params.assistantName);
   return (
     <div>
@@ -14,8 +15,7 @@ const Page = () => {
         <>learningAssistant</>
       ) : params.assistantName === "interviewCoach" ? (
         <div className="w-full">
-          <CallPage />
-          call page
+          <InterviewAssistant userId={params.id} />
         </div>
       ) : (
         <>404</>
