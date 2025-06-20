@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
   BicepsFlexed,
+  ChartColumnIncreasing,
   Goal,
   GoalIcon,
   HandHelping,
@@ -88,6 +89,7 @@ interface FormProps {
   style: string;
   skillsRequired?: string;
   maxQuestions?: number;
+  help: string;
 }
 
 const InterviewAssistant = ({ userId }: { userId: string }) => {
@@ -99,6 +101,7 @@ const InterviewAssistant = ({ userId }: { userId: string }) => {
     skillsRequired: "",
     maxQuestions: 0,
     strengthen: "",
+    help: "",
   });
 
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -112,6 +115,7 @@ const InterviewAssistant = ({ userId }: { userId: string }) => {
     skillsRequired,
     maxQuestions,
     strengthen,
+    help,
   }: FormProps) => {
     try {
       if (
@@ -119,7 +123,8 @@ const InterviewAssistant = ({ userId }: { userId: string }) => {
         goal.trim() === "" ||
         weaknesses.trim() === "" ||
         strengthen.trim() === "" ||
-        style.trim() === ""
+        style.trim() === "" ||
+        help.trim() === ""
       ) {
         setErrorMessage("Please fill out the form!");
         return;
@@ -131,7 +136,8 @@ const InterviewAssistant = ({ userId }: { userId: string }) => {
         strengthen,
         style,
         skillsRequired,
-        maxQuestions
+        maxQuestions,
+        help
       );
     } catch (err) {
       console.error(err);
@@ -248,6 +254,19 @@ const InterviewAssistant = ({ userId }: { userId: string }) => {
             </div>
             <div className="lg:w-2/3 w-full items-start gap-2 flex flex-col justify-center">
               <Label htmlFor="academic-level">
+                <ChartColumnIncreasing size={15} className="mr-1" />
+                Where do you need help the most?
+              </Label>
+              <Input
+                value={formState.help || ""}
+                placeholder="Describe where you need help."
+                onChange={(e) =>
+                  setFormState({ ...formState, help: e.target.value })
+                }
+              />
+            </div>
+            <div className="lg:w-2/3 w-full items-start gap-2 flex flex-col justify-center">
+              <Label htmlFor="academic-level">
                 <Speech size={15} className="mr-1" />
                 <span className="text-red-500">*</span>Required Skills
               </Label>
@@ -275,7 +294,6 @@ const InterviewAssistant = ({ userId }: { userId: string }) => {
                 <span className="text-red-500">*</span>max. Questions
               </Label>
               <Select
-                value={formState.maxQuestions?.toString() || ""}
                 onValueChange={(e) =>
                   setFormState({ ...formState, maxQuestions: parseInt(e) })
                 }
@@ -302,6 +320,9 @@ const InterviewAssistant = ({ userId }: { userId: string }) => {
                 onChange={(e) =>
                   setFormState({ ...formState, context: e.target.value })
                 }
+                minLength={40}
+                maxLength={400}
+                placeholder="Describe the general context in the interview you are expecting."
               />
             </div>
           </div>
@@ -323,8 +344,8 @@ const InterviewAssistant = ({ userId }: { userId: string }) => {
             )}
           </Button>
           <p className="pt-4 pb-8 text-base mx-auto max-w-6xl text-center">
-            These Informations will be used in every next interaction with
-            StudyMe. They can be changed everytime.
+            These Informations will be used in the new interview you are
+            currently creating.
           </p>
         </form>
       </section>
