@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import type { UserData } from "@prisma/client";
 import { AudioLines, ChevronRight, Handshake, Workflow } from "lucide-react";
 import { AnalysisChart } from "@/components/AnalysisChart";
+import RedirectSession from "@/components/RedirectSession";
 
 interface SectionCard {
   title: string;
@@ -81,6 +82,7 @@ const Dashboard = () => {
 
   return (
     <>
+      <RedirectSession />
       <section className="flex w-full flex-col px-24">
         <div className="pt-8 flex items-start justify-start">
           <h1 className="text-3xl lg:text-5xl p font-bold">

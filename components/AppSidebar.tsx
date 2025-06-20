@@ -20,17 +20,17 @@ const items = [
   },
   {
     title: "Homework Analyst",
-    url: "#",
+    url: "/dashboard/assistant/homeworkAnalyst",
     icon: Workflow,
   },
   {
     title: "Learning Assistant",
-    url: "#",
+    url: "/dashboard/assistant/learningAssistant",
     icon: Handshake,
   },
   {
     title: "Interview Coach",
-    url: "#",
+    url: "/dashboard/assistant/interviewCoach",
     icon: AudioLines,
   },
   {

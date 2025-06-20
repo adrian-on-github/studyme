@@ -1,12 +1,10 @@
 import React from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/AppSidebar";
-import RedirectSession from "@/components/RedirectSession";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div>
-      <RedirectSession />
       <SidebarProvider>
         <AppSidebar />
         <main className="w-full">
