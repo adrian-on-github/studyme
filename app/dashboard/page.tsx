@@ -101,7 +101,7 @@ const Dashboard = () => {
               </>
             }
             href="#"
-            color="bg-blue-500/30"
+            color="bg-blue-500/20"
           />
           <SectionCard
             title="Learning Assistant"
@@ -112,7 +112,7 @@ const Dashboard = () => {
               </>
             }
             href="#"
-            color="bg-yellow-500/30"
+            color="bg-yellow-500/20"
           />
           <SectionCard
             title="Interview Coach"
@@ -123,7 +123,7 @@ const Dashboard = () => {
               </>
             }
             href="#"
-            color="bg-green-500/30"
+            color="bg-green-500/20"
           />
         </div>
 

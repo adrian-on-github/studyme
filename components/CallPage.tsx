@@ -6,6 +6,7 @@ import Image from "next/image";
 import { media } from "@/constants";
 import { ChevronRight, PhoneCall, PhoneOff, Video, Zap } from "lucide-react";
 import { vapi } from "@/lib/vapi";
+import FinalOverview from "./FinalOverview";
 
 interface CallPageProps {
   userId: string;
@@ -30,6 +31,23 @@ type Message = {
 
 type SpeakerRole = "user" | "assistant" | null;
 
+type QuestionFeedback = {
+  question: string;
+  feedback: string;
+  score: number;
+};
+
+type InterviewSummary = {
+  scoreBeginning: number;
+  scoreMiddle: number;
+  scoreEnd: number;
+  scoreOverall: number;
+  strengths: string[];
+  areasForImprovement: string[];
+  questionFeedback: QuestionFeedback[];
+  generalTips: string[];
+};
+
 const CallPage = ({
   userId,
   assistantId,
@@ -42,6 +60,9 @@ const CallPage = ({
   const [success, setSuccess] = useState<boolean>(false);
   const [callId, setCallId] = useState<string>("");
   const [errorText, setErrorText] = useState<string>("");
+  const [summarizedText, setSummarizedText] = useState<string>("");
+  const [interviewSummary, setInterviewSummary] =
+    useState<InterviewSummary | null>(null);
   const [currentCallStatus, setCurrentCallStatus] = useState<callStatus>(
     callStatus.INACTIVE
   );
@@ -79,11 +100,17 @@ const CallPage = ({
       console.error(data);
       setErrorText("Please try later again!");
     }
-    console.log(data);
-    console.log(data.callData.analysis.structuredData.scoreBeginning);
-    console.log(data.callData.analysis.structuredData.scoreMiddle);
-    console.log(data.callData.analysis.structuredData.scoreEnd);
-    console.log(data.callData.analysis.structuredData.scoreOverall);
+    console.log(data.summary || "No summary");
+    console.log(data.callData.analysis.structuredData);
+
+    if (data.summary && data.callData.analysis.structuredData) {
+      setInterviewSummary(data.callData.analysis.structuredData);
+      setSummarizedText(data.callData.summarized || userInformations);
+
+      setSuccess(true);
+    } else {
+      setErrorText("Please try later again!");
+    }
   };
 
   const handleReconnect = async () => {
@@ -284,7 +311,12 @@ const CallPage = ({
           )}
         </section>
       ) : (
-        <div>Success</div>
+        <div className="h-full w-full p-8 bg-blue-500/20">
+          <FinalOverview
+            InterviewData={interviewSummary!}
+            summary={summarizedText}
+          />
+        </div>
       )}
     </>
   );
