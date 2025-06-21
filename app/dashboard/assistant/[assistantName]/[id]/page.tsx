@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import { useParams } from "next/navigation";
-import CallPage from "@/components/CallPage";
 import InterviewAssistant from "@/components/assistants/InterviewAssistant";
 
 const Page = () => {
