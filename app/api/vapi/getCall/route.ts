@@ -8,6 +8,6 @@ export async function GET(req: Request) {
     },
   });
 
-  const data = await res.json();
-  return Response.json(data);
+  const callData = await res.json();
+  return Response.json({ callData }, { status: 200 });
 }

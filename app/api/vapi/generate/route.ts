@@ -1,15 +1,9 @@
 import { NextResponse } from "next/server";
-import { generateText } from "ai";
-import { google } from "@ai-sdk/google";
 
 import { prisma } from "@/lib/prisma";
 
-export async function GET() {
-  return Response.json({ success: true, data: "Thank you" }, { status: 200 });
-}
-
 export async function POST(req: Request) {
-  const { user, callId, assistantId } = await req.json();
+  const { user, callId, assistantId, text } = await req.json();
 
   if (!user) {
     return NextResponse.json(
@@ -19,34 +13,12 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { text: summarizedText } = await generateText({
-      model: google("gemini-2.0-flash-001"),
-      prompt: `
-            Hello Gemini! Please generate a concise, well-structured summary based on the following user interview data. The goal is to prepare an AI use case profile that includes relevant context about the user’s goals, background, and preferences. This summary should be informative, human-readable, and useful for educational or learning-related AI systems.
-            
-            User Information:
-            - Subject: ${user.subject}
-            - Preferred Learning Method: ${user.learningMethod}
-            - Learning Goal: ${user.goal}
-            - Educational Institution: ${user.educationalInstitution}
-            - Academic Level: ${user.academicLevel}
-            - Additional Information: ${user.additionalInformations} (remove all unnessescarry information which dont complain to the topic: studying)
-            
-            Please ensure the result is:
-            - In natural, fluent English
-            - No longer than 5–7 sentences
-            - Focused to use in further AI prompts
-            
-            Thank you! <3
-            `,
-    });
-
     await prisma.userData.update({
       where: {
         userId: user.userId,
       },
       data: {
-        additional_informations: summarizedText || user.additionalInformations,
+        additional_informations: text,
       },
     });
 
@@ -54,7 +26,7 @@ export async function POST(req: Request) {
       data: {
         id: callId,
         assistantId,
-        summarizedText,
+        summarizedText: text,
         created_at: new Date().toISOString(),
         user: {
           connect: { userId: user.userId },
