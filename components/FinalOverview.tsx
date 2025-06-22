@@ -14,13 +14,18 @@ interface InterviewData {
   strengths: string[];
   areasForImprovement: string[];
   questionFeedback: QuestionFeedback[];
-  summary: string;
 }
 
-const FinalOverview = ({ InterviewData }: { InterviewData: InterviewData }) => {
+const FinalOverview = ({
+  InterviewData,
+  summary,
+}: {
+  InterviewData: InterviewData;
+  summary: string;
+}) => {
   if (!InterviewData) return <p>Please try later again!</p>;
 
-  return <div>SUCCESS!🥳🥳🥳</div>;
+  return <div className="w-full h-full">SUCCESS!🥳🥳🥳</div>;
 };
 
 export default FinalOverview;

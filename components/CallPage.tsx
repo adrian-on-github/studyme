@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { vapi } from "@/lib/vapi";
 import FinalOverview from "./FinalOverview";
+import Typewriter from "./Typewriter";
 
 interface CallPageProps {
   userId: string;
@@ -52,7 +53,6 @@ type InterviewSummary = {
   strengths: string[];
   areasForImprovement: string[];
   questionFeedback: QuestionFeedback[];
-  summary: string;
 };
 
 const CallPage = ({
@@ -68,6 +68,8 @@ const CallPage = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [callId, setCallId] = useState<string>("");
   const [errorText, setErrorText] = useState<string>("");
+  const [summarizedText, setSummarizedText] = useState<string>("");
+  const [message, setMessage] = useState<string>("");
   const [interviewSummary, setInterviewSummary] =
     useState<InterviewSummary | null>(null);
   const [currentCallStatus, setCurrentCallStatus] = useState<callStatus>(
@@ -114,10 +116,12 @@ const CallPage = ({
   };
 
   const handleFinishCall = async () => {
-    setLoading(true);
-    setErrorText("");
+    try {
+      setLoading(true);
+      setErrorText("");
 
-    const timeout = setTimeout(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10000));
+
       const res = await fetch(`/api/vapi/getCall?callId=${callId}`);
       console.log(callId);
 
@@ -127,11 +131,13 @@ const CallPage = ({
         setErrorText("Please try later again!");
       }
       console.log(data.callData.analysis.structuredData);
+      console.log(data.callData);
 
       if (data.callData.analysis.structuredData) {
         setInterviewSummary(data.callData.analysis.structuredData);
+        setSummarizedText(data.callData.summary);
 
-        const createFeedback = await fetch(
+        const feedbackRes = await fetch(
           `/api/vapi/createFeedback?callId=${callId}`,
           {
             method: "POST",
@@ -145,19 +151,22 @@ const CallPage = ({
           }
         );
 
-        const feedbackData = await createFeedback.json();
+        const feedbackData = await feedbackRes.json();
 
-        if (!createFeedback.ok) {
+        if (!feedbackRes.ok) {
           console.error(feedbackData);
         }
 
-        if (feedbackData.success === true) {
-          setSuccess(true);
-        }
+        setSuccess(true);
       } else {
         setErrorText("Please try later again!");
       }
-    }, 2000);
+    } catch (error) {
+      console.error(error);
+      setErrorText("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleReconnect = async () => {
@@ -241,7 +250,7 @@ const CallPage = ({
         setIsSpeaking(null);
       }
 
-      console.log(message.transcript);
+      setMessage(message.transcript);
     };
 
     vapi.on("call-start", onStartCall);
@@ -346,7 +355,7 @@ const CallPage = ({
                 <Zap />
                 Trying to connect again...
               </>
-            ) : loading === true ? (
+            ) : loading ? (
               <>
                 <LoaderCircle className="animate-spin text-black" />
                 <p className="text-black">Loading...</p>
@@ -358,15 +367,18 @@ const CallPage = ({
               </>
             )}
           </Button>
-          {currentCallStatus === "FINISHED" && (
-            <p className="pt-8 text-base mx-auto max-w-6xl text-center">
-              {/* Analyse */}
-            </p>
+          {currentCallStatus === "ACTIVE" && (
+            <div className="flex justify-center items-center p-4 mx-auto max-w-6xl bg-blue-500/5 mt-8 rounded-md min-w-lg">
+              <Typewriter text={message} />
+            </div>
           )}
         </section>
       ) : (
         <div className="h-full w-full p-8 bg-blue-500/20">
-          <FinalOverview InterviewData={interviewSummary!} />
+          <FinalOverview
+            InterviewData={interviewSummary!}
+            summary={summarizedText}
+          />
         </div>
       )}
     </>
