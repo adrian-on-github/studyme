@@ -145,6 +145,7 @@ ${textContent}
       }
 
       const data = await res.json();
+      console.log(data);
       setUserData(data.userData);
     };
 

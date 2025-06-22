@@ -93,28 +93,6 @@ const Dashboard = () => {
         </div>
         <div className="flex flex-row justify-center items-center mt-12 w-full gap-x-12">
           <SectionCard
-            title="Homework Analyst"
-            description="Most useful assistant for explaining"
-            icon={
-              <>
-                <Workflow size={40} />
-              </>
-            }
-            href="#"
-            color="bg-blue-500/20"
-          />
-          <SectionCard
-            title="Learning Assistant"
-            description="Perfect for learning anything"
-            icon={
-              <>
-                <Handshake size={40} />
-              </>
-            }
-            href="#"
-            color="bg-yellow-500/20"
-          />
-          <SectionCard
             title="Interview Coach"
             description="Questions to any topic you want"
             icon={

@@ -41,16 +41,6 @@ const AppSidebar = () => {
       icon: LayoutGrid,
     },
     {
-      title: "Homework Analyst",
-      url: `/dashboard/assistant/homeworkAnalyst/${userId}`,
-      icon: Workflow,
-    },
-    {
-      title: "Learning Assistant",
-      url: `/dashboard/assistant/learningAssistant/${userId}`,
-      icon: Handshake,
-    },
-    {
       title: "Interview Coach",
       url: `/dashboard/assistant/interviewCoach/${userId}`,
       icon: AudioLines,
@@ -60,7 +50,7 @@ const AppSidebar = () => {
     <Sidebar>
       <SidebarContent className="bg-blue-500/20 flex flex-col justify-between pb-4">
         <SidebarGroup>
-          <SidebarGroupLabel>StudyMe</SidebarGroupLabel>
+          <SidebarGroupLabel>InterviewMe</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
@@ -73,6 +63,16 @@ const AppSidebar = () => {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+            </SidebarMenu>
+
+            <SidebarMenu>
+              <div className="w-full h-full flex flex-col items-start mt-4">
+                <SidebarGroupLabel>Recent Interviews</SidebarGroupLabel>
+
+                <SidebarMenuButton asChild>
+                  <p className="p text-sm px-2">IT Career Job</p>
+                </SidebarMenuButton>
+              </div>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

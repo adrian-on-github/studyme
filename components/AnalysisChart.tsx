@@ -44,7 +44,9 @@ export function AnalysisChart() {
   return (
     <div className="w-full px-6">
       <div className="mb-8">
-        <h2 className="text-black text-lg font-medium mb-2">Learning Path</h2>
+        <h2 className="text-black text-lg font-medium mb-2">
+          Interview Analysis
+        </h2>
 
         <div className="mt-2">
           <span className="flex flex-row items-center gap-x-1 text-green-500 text-sm font-medium">

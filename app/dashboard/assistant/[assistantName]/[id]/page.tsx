@@ -14,7 +14,7 @@ const Page = () => {
         <>learningAssistant</>
       ) : params.assistantName === "interviewCoach" ? (
         <div className="w-full">
-          <InterviewAssistant userId={params.id} />
+          <InterviewAssistant />
         </div>
       ) : (
         <>404</>
