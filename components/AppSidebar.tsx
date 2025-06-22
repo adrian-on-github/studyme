@@ -64,32 +64,8 @@ const AppSidebar = () => {
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
-
-            <SidebarMenu>
-              <div className="w-full h-full flex flex-col items-start mt-4">
-                <SidebarGroupLabel>Recent Interviews</SidebarGroupLabel>
-
-                <SidebarMenuButton asChild>
-                  <p className="p text-sm px-2">IT Career Job</p>
-                </SidebarMenuButton>
-              </div>
-            </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        {/* Footer Bereich unten */}
-        <div className="p-2">
-          <SidebarMenu>
-            <SidebarMenuItem key="Settings">
-              <SidebarMenuButton asChild>
-                <a href="#">
-                  <Settings />
-                  <span>Settings</span>
-                </a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </div>
       </SidebarContent>
     </Sidebar>
   );

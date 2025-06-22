@@ -1,0 +1,20 @@
+"use client";
+import React from "react";
+import { useParams } from "next/navigation";
+import InterviewAssistant from "@/components/assistants/InterviewAssistant";
+
+const Page = () => {
+  const params = useParams<{ assistantName: string; id: string }>();
+  console.log(params.assistantName);
+  return (
+    <div>
+      {params.assistantName === "interviewCoach" && (
+        <div className="w-full">
+          <InterviewAssistant />
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Page;

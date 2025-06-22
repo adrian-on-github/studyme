@@ -62,44 +62,60 @@ const InterviewAssistant = () => {
         return;
       }
       const textContent = context;
+      const cleaned = textContent
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean) // remove empty lines
+        .filter((line, i, arr) => arr.indexOf(line) === i) // remove duplicates
+        .join(" ");
 
       const res = await fetch("/api/gemini", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           prompt: `
-You are an expert assistant which is speaking every language your customer want.
+You are a multilingual assistant preparing users for voice-based interview simulations.
 
-Please review the following user input and check whether it includes the following six information elements — either explicitly or implicitly:
+Your task is to analyze the user input below and determine whether it includes all of the following six required information elements.
 
-1. maxQuestions – How many interview questions the user wants (e.g. "7 questions", "ten questions").
-2. weaknesses – Any personal weaknesses or areas the user wants to focus on (e.g. "nervousness", "market sizing").
-3. style – Preferred interview style (e.g. "relaxed", "conversational", "challenging").
-4. goal – The user's main goal for this session (e.g. "build confidence", "improve presentation skills").
-5. feedbackPreference – How the user wants to receive feedback (e.g. "after each question", "written feedback").
+⚠️ You must accept both **explicit and implicit mentions**. Even the **slightest hint**, indirect phrasing, or vague reference is enough to count as “present.”
 
-If **all six** are mentioned (even in a non-explicit way), respond ONLY with the following valid JSON:
+Required elements:
+
+1. "maxQuestions" – The number of interview questions the user wants (e.g. "7 questions", "ten questions").
+2. "weaknesses" – Any personal weaknesses or focus areas (e.g. "public speaking", "market sizing", "nervousness").
+3. "style" – Preferred interview style (e.g. "relaxed", "conversational", "formal", "challenging").
+4. "goal" – The user's main objective (e.g. "build confidence", "practice for a real interview").
+5. "feedbackPreference" – How the user would like to receive feedback (e.g. "after each question", "written summary").
+
+---
+
+### If **all six elements** are present (even through subtle wording):
+→ Respond with a **valid JSON object** in the following format:
 
 {
   "success": true,
-  "summary": "..." // Summarize the user's input in clear plain English (1-2 sentences)
+  "summary": "..." // Summarize the user's input clearly and concisely in 1–2 English sentences.
 }
 
-If **even one** element is missing, respond ONLY with this valid JSON:
+### If **any element is missing**:
+→ Respond with a **valid JSON object** in the following format:
 
 {
   "success": false,
-  "followUp": "..." // Politely ask the user for the missing information in a natural, flowing tone
+  "followUp": "..." // Ask for the missing information in a natural, polite, and conversational tone.
 }
 
-⚠️ Very important:
-- Do NOT include markdown (no \`\`\`)
-- Do NOT include anything before or after the JSON
-- Do NOT list missing elements
-- Your response MUST be a valid, parsable JSON object only
+---
 
-Now analyze the following user input:
-${textContent}
+🚫 Do NOT include markdown (no code blocks or backticks).  
+🚫 Do NOT include any intro or explanation.  
+🚫 Do NOT list which elements are missing.  
+✅ Output must be a single valid JSON object that can be directly parsed.
+
+Now analyze this user input:  
+${cleaned}
+
 `,
         }),
       });

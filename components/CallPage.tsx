@@ -69,7 +69,6 @@ const CallPage = ({
   const [callId, setCallId] = useState<string>("");
   const [errorText, setErrorText] = useState<string>("");
   const [summarizedText, setSummarizedText] = useState<string>("");
-  const [message, setMessage] = useState<string>("");
   const [interviewSummary, setInterviewSummary] =
     useState<InterviewSummary | null>(null);
   const [currentCallStatus, setCurrentCallStatus] = useState<callStatus>(
@@ -250,9 +249,6 @@ const CallPage = ({
       } else {
         setIsSpeaking(null);
       }
-
-      setMessage(message.transcript);
-      console.log(message.transcript);
     };
 
     vapi.on("call-start", onStartCall);
@@ -369,11 +365,6 @@ const CallPage = ({
               </>
             )}
           </Button>
-          {currentCallStatus === "ACTIVE" && (
-            <div className="flex justify-center items-center p-4 mx-auto max-w-6xl bg-blue-500/5 mt-8 rounded-md min-w-1/2">
-              <Typewriter text={message} />
-            </div>
-          )}
         </section>
       ) : (
         <div className="h-[100vh] w-full p-8 bg-blue-500/5">
