@@ -125,21 +125,6 @@ ${textContent}
     }
   };
 
-  const handleSubmit = async () => {
-    try {
-      setLoading(true);
-      setErrorMessage("");
-      if (!summarizedText) {
-        setErrorMessage("Please fill out the form!");
-        return;
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     if (displayedText) {
       console.log("Displayed Text changed:", displayedText);

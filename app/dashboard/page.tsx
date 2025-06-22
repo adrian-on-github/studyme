@@ -24,7 +24,7 @@ const SectionCard = ({
   return (
     <>
       <a
-        className="flex min-w-sm items-center justify-center py-3 border border-black/10 bg-black/1 rounded-2xl gap-x-3 hover:opacity-60 cursor-pointer transition duration-200"
+        className="flex w-1/3 items-center justify-center py-3 border border-black/10 bg-black/1 rounded-2xl gap-x-3 hover:opacity-60 cursor-pointer transition duration-200"
         href={href}
       >
         <div className={`p-1 rounded-xl ${color}`}>{icon}</div>

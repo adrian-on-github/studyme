@@ -35,7 +35,7 @@ const chartData = [
 
 const chartConfig = {
   success: {
-    label: "Success Rate",
+    label: "Overall Performance",
     color: "oklch(72.3% 0.219 149.579)",
   },
 } satisfies ChartConfig;
@@ -45,13 +45,11 @@ export function AnalysisChart() {
     <div className="w-full px-6">
       <div className="mb-8">
         <h2 className="text-black text-lg font-medium mb-2">Learning Path</h2>
-        <div className="flex items-baseline gap-3">
-          <span className="text-black text-5xl font-bold">🔥(Streak)</span>
-        </div>
+
         <div className="mt-2">
-          <span className="flex flex-row items-center gap-x-1 text-green-400 text-sm font-medium">
+          <span className="flex flex-row items-center gap-x-1 text-green-500 text-sm font-medium">
             <TrendingUp size={20} />
-            (success rate of all time)
+            overall Performance
           </span>
         </div>
       </div>

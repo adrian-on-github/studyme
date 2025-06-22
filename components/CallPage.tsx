@@ -4,7 +4,14 @@ import { Button } from "@/components/ui/button";
 import type { UserData } from "@prisma/client";
 import Image from "next/image";
 import { media } from "@/constants";
-import { ChevronRight, PhoneCall, PhoneOff, Video, Zap } from "lucide-react";
+import {
+  ChevronRight,
+  LoaderCircle,
+  PhoneCall,
+  PhoneOff,
+  Video,
+  Zap,
+} from "lucide-react";
 import { vapi } from "@/lib/vapi";
 import FinalOverview from "./FinalOverview";
 
@@ -45,7 +52,7 @@ type InterviewSummary = {
   strengths: string[];
   areasForImprovement: string[];
   questionFeedback: QuestionFeedback[];
-  generalTips: string[];
+  summary: string;
 };
 
 const CallPage = ({
@@ -58,9 +65,9 @@ const CallPage = ({
   const [userData, setUserData] = useState<UserData | null>(null);
   const [mount, setMount] = useState<boolean>(false);
   const [success, setSuccess] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [callId, setCallId] = useState<string>("");
   const [errorText, setErrorText] = useState<string>("");
-  const [summarizedText, setSummarizedText] = useState<string>("");
   const [interviewSummary, setInterviewSummary] =
     useState<InterviewSummary | null>(null);
   const [currentCallStatus, setCurrentCallStatus] = useState<callStatus>(
@@ -82,6 +89,21 @@ const CallPage = ({
 
       console.log(vapiCall);
       setCallId(vapiCall?.id!);
+
+      const res = await fetch(`/api/vapi/create?callId=${vapiCall?.id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          assistantId: assistantId,
+          summarizedText: userInformations,
+          userId: userData?.userId,
+        }),
+      });
+
+      const data = await res.json();
+      console.log(data);
     } catch (error) {
       console.error(error);
     }
@@ -92,25 +114,50 @@ const CallPage = ({
   };
 
   const handleFinishCall = async () => {
-    const res = await fetch(`/api/vapi/getCall?callId=${callId}`);
-    console.log(callId);
+    setLoading(true);
+    setErrorText("");
 
-    const data = await res.json();
-    if (!res.ok) {
-      console.error(data);
-      setErrorText("Please try later again!");
-    }
-    console.log(data.summary || "No summary");
-    console.log(data.callData.analysis.structuredData);
+    const timeout = setTimeout(async () => {
+      const res = await fetch(`/api/vapi/getCall?callId=${callId}`);
+      console.log(callId);
 
-    if (data.summary && data.callData.analysis.structuredData) {
-      setInterviewSummary(data.callData.analysis.structuredData);
-      setSummarizedText(data.callData.summarized || userInformations);
+      const data = await res.json();
+      if (!res.ok) {
+        console.error(data);
+        setErrorText("Please try later again!");
+      }
+      console.log(data.callData.analysis.structuredData);
 
-      setSuccess(true);
-    } else {
-      setErrorText("Please try later again!");
-    }
+      if (data.callData.analysis.structuredData) {
+        setInterviewSummary(data.callData.analysis.structuredData);
+
+        const createFeedback = await fetch(
+          `/api/vapi/createFeedback?callId=${callId}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              context: data.callData.summarized || userInformations,
+              userId: userData?.userId,
+            }),
+          }
+        );
+
+        const feedbackData = await createFeedback.json();
+
+        if (!createFeedback.ok) {
+          console.error(feedbackData);
+        }
+
+        if (feedbackData.success === true) {
+          setSuccess(true);
+        }
+      } else {
+        setErrorText("Please try later again!");
+      }
+    }, 2000);
   };
 
   const handleReconnect = async () => {
@@ -255,7 +302,7 @@ const CallPage = ({
           </div>
           {errorText && <p className="text-red-500 mt-4">{errorText}</p>}
           <Button
-            disabled={currentCallStatus === "CONNECTING"}
+            disabled={currentCallStatus === "CONNECTING" || loading}
             className={`w-1/2 mt-12 min-h-[5vh] hover:opacity-80 transition duration-200 rounded-full ${
               currentCallStatus === "ACTIVE"
                 ? "bg-red-500"
@@ -265,6 +312,8 @@ const CallPage = ({
                 ? "bg-black/5"
                 : currentCallStatus === "DISCONNECTED"
                 ? "bg-blue-500 animate-pulse"
+                : loading
+                ? "bg-black/5"
                 : "bg-green-500 animate-pulse"
             }`}
             onClick={() =>
@@ -297,6 +346,11 @@ const CallPage = ({
                 <Zap />
                 Trying to connect again...
               </>
+            ) : loading === true ? (
+              <>
+                <LoaderCircle className="animate-spin text-black" />
+                <p className="text-black">Loading...</p>
+              </>
             ) : (
               <>
                 <PhoneCall />
@@ -312,10 +366,7 @@ const CallPage = ({
         </section>
       ) : (
         <div className="h-full w-full p-8 bg-blue-500/20">
-          <FinalOverview
-            InterviewData={interviewSummary!}
-            summary={summarizedText}
-          />
+          <FinalOverview InterviewData={interviewSummary!} />
         </div>
       )}
     </>

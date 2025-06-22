@@ -32,7 +32,7 @@ model UserData {
   additional_informations String?
   user User @relation(fields: [userId], references: [id])
   vapiCalls VapiCall[]
-  interviews Interview[]
+  feedbacks Feedback[]
 }
 
 model Account {
@@ -57,21 +57,23 @@ model Account {
 model VapiCall {
   id String @id
   userId String
-  created_at String @map("createdAt")
+  created_at DateTime @default(now()) @map("createdAt")
   assistantId String
   summarizedText String
   
   user UserData @relation(fields: [userId], references: [userId])
+  feedback Feedback?
 }
 
-model Interview {
+model Feedback {
   id String @id @default(uuid())
+  callId String @unique
   userId String
   created_at DateTime @default(now()) @map("createdAt")
   context String
-  topic String
   
-  user UserData @relation(fields: [userId], references: [userId])
+  vapiCall VapiCall @relation(fields: [callId], references: [id])
+  userData UserData @relation(fields: [userId], references: [userId])
 }
 
 model Session {
