@@ -104,7 +104,7 @@ const FinalOverview = ({
           {InterviewData.areasForImprovement}
         </p>
         <div>
-          <span className="underline text-xl">Interview Questions:</span>
+          <span className="underline text-xl mb-2">Interview Questions:</span>
           {InterviewData.questionFeedback.map((question, index) => (
             <div
               className="flex justify-start items-start flex-col gap-y-2"

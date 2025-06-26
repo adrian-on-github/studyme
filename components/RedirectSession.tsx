@@ -23,12 +23,14 @@ const RedirectSession = () => {
         console.error("POST Request Failed!");
       }
       const data = await res.json();
-      const id = data.userId;
       const userSession = localStorage.getItem("session");
-      if ((!data.exists || data.user === null) && !userSession) {
-        router.push(`/get-started/${id}`);
+
+      if (!data.exists && !userSession) {
+        router.push(`/get-started/${data.userId}`);
       } else if (data.exists && userSession) {
         router.push("/dashboard");
+      } else {
+        router.push("/");
       }
     };
 

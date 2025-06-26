@@ -33,7 +33,7 @@ enum callStatus {
 
 type Message = {
   type: "transcript" | string;
-  role: "assistant" | "user" | string;
+  role: "assistant" | "user" | null;
   transcript: string;
 };
 
@@ -69,6 +69,7 @@ const CallPage = ({
   const [callId, setCallId] = useState<string>("");
   const [errorText, setErrorText] = useState<string>("");
   const [summarizedText, setSummarizedText] = useState<string>("");
+  const [scores, setScores] = useState<number[]>([]);
   const [interviewSummary, setInterviewSummary] =
     useState<InterviewSummary | null>(null);
   const [currentCallStatus, setCurrentCallStatus] = useState<callStatus>(
@@ -155,6 +156,31 @@ const CallPage = ({
         if (!feedbackRes.ok) {
           console.error(feedbackData);
         }
+
+        const scoreRes = await fetch(`/api/vapi/createScore`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            score: data.callData.analysis.structuredData.scoreOverall,
+            userId: userData?.userId,
+          }),
+        });
+
+        const scoreData = await scoreRes.json();
+
+        if (!scoreData.ok) {
+          console.error(scoreData);
+        }
+
+        localStorage.setItem(
+          "interviewScores",
+          JSON.stringify([
+            ...scores,
+            data.callData.analysis.structuredData.overallScore,
+          ])
+        );
 
         setSuccess(true);
       } else {
@@ -246,7 +272,7 @@ const CallPage = ({
         setIsSpeaking("assistant");
       } else if (message.role === "user") {
         setIsSpeaking("user");
-      } else {
+      } else if (message.role === null) {
         setIsSpeaking(null);
       }
     };
@@ -260,6 +286,13 @@ const CallPage = ({
       vapi.off("call-end", onEndCall);
       vapi.off("message", onMessage);
     };
+  }, []);
+
+  useEffect(() => {
+    const scores = localStorage.getItem("interviewScores");
+    if (scores) {
+      setScores(JSON.parse(scores));
+    }
   }, []);
 
   if (!mount) return null;

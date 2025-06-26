@@ -65,8 +65,8 @@ const InterviewAssistant = () => {
       const cleaned = textContent
         .split("\n")
         .map((line) => line.trim())
-        .filter(Boolean) // remove empty lines
-        .filter((line, i, arr) => arr.indexOf(line) === i) // remove duplicates
+        .filter(Boolean)
+        .filter((line, i, arr) => arr.indexOf(line) === i)
         .join(" ");
 
       const res = await fetch("/api/gemini", {
@@ -74,7 +74,7 @@ const InterviewAssistant = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           prompt: `
-You are a multilingual assistant preparing users for voice-based interview simulations.
+You are a ${userData?.language} assistant preparing users for voice-based interview simulations.
 
 Your task is to analyze the user input below and determine whether it includes all of the following six required information elements.
 

@@ -24,7 +24,7 @@ const SectionCard = ({
   return (
     <>
       <a
-        className="flex w-1/3 items-center justify-center py-3 border border-black/10 bg-black/1 rounded-2xl gap-x-3 hover:opacity-60 cursor-pointer transition duration-200"
+        className="flex w-1/2 items-center justify-center py-3 border border-black/10 bg-black/1 rounded-2xl gap-x-3 hover:opacity-60 cursor-pointer transition duration-200"
         href={href}
       >
         <div className={`p-1 rounded-xl ${color}`}>{icon}</div>
@@ -52,6 +52,20 @@ const Dashboard = () => {
   const { data: session } = useSession();
   const [user, setUser] = useState<UserData | null>(null);
   const [mount, setMount] = useState<boolean>(false);
+  const [fullName, setFullName] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Code wird nur im Browser ausgeführt
+    const userDataString = localStorage.getItem("userData");
+    if (userDataString) {
+      try {
+        const userData = JSON.parse(userDataString);
+        setFullName(userData.user.fullname);
+      } catch (err) {
+        console.error("Failed to parse userData:", err);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const getUserData = async () => {
@@ -68,6 +82,8 @@ const Dashboard = () => {
         });
         const data = await res.json();
         console.log(data.user);
+
+        localStorage.setItem("userData", JSON.stringify(data));
         if (data.exists && data.user) {
           setUser(data.user);
         }
@@ -88,21 +104,8 @@ const Dashboard = () => {
       <section className="flex w-full flex-col px-24">
         <div className="pt-8 flex items-start justify-start">
           <h1 className="text-3xl lg:text-5xl p font-bold">
-            Hey {user?.fullname}!👋
+            Hey {fullName || user?.fullname}!👋
           </h1>
-        </div>
-        <div className="flex flex-row justify-center items-center mt-12 w-full gap-x-12">
-          <SectionCard
-            title="Interview Coach"
-            description="Questions to any topic you want"
-            icon={
-              <>
-                <AudioLines size={40} />
-              </>
-            }
-            href="#"
-            color="bg-green-500/20"
-          />
         </div>
 
         <div className="w-full mt-6">

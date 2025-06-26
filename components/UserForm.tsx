@@ -175,7 +175,7 @@ const UserForm = () => {
       if (!data.success) {
         setErrorMessage("Something went wrong!");
       }
-      console.log(data);
+
       localStorage.setItem("session", JSON.stringify({ id: params.id }));
     } catch (error) {
       console.error(error);

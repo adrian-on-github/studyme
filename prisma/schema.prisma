@@ -33,6 +33,7 @@ model UserData {
   user User @relation(fields: [userId], references: [id])
   vapiCalls VapiCall[]
   feedbacks Feedback[]
+  overallScores InterviewScore[]
 }
 
 model Account {
@@ -83,4 +84,13 @@ model Session {
   expires      DateTime
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model InterviewScore {
+  id String @id @default(uuid())
+  userId String
+  overallScore Int
+  createdAt DateTime @default(now())
+
+  user UserData @relation(fields: [userId], references: [userId])
 }

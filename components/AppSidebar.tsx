@@ -18,6 +18,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import SettingsDialog from "./SettingsModal";
 
 const AppSidebar = () => {
   const [userId, setUserId] = useState<string | null>(null);
@@ -47,27 +48,46 @@ const AppSidebar = () => {
     },
   ];
   return (
-    <Sidebar>
-      <SidebarContent className="bg-blue-500/20 flex flex-col justify-between pb-4">
-        <SidebarGroup>
-          <SidebarGroupLabel>InterviewMe</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
+    <>
+      <Sidebar>
+        <SidebarContent className="bg-blue-500/20 flex flex-col justify-between pb-4">
+          <SidebarGroup>
+            <SidebarGroupLabel>InterviewMe</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {items.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      className="border-black/10 border my-0.5"
+                    >
+                      <a href={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+          <SidebarGroup>
+            <SidebarGroupContent className="flex justify-center items-center">
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    className="border-black/10 border my-0.5"
+                  >
+                    <SettingsDialog />
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-    </Sidebar>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+      </Sidebar>
+    </>
   );
 };
 
